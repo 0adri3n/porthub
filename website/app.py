@@ -1,3 +1,4 @@
+from boto3.dynamodb.conditions import Key, Attr
 from flask import Flask, render_template, request, jsonify
 from dotenv import load_dotenv
 import os
@@ -27,40 +28,34 @@ try:
     dynamodb.meta.client.describe_table(TableName='user')
     print("Connexion à DynamoDB réussie.")
 except ClientError as e:
-    if e.response['Error']['Code'] == 'ResourceNotFoundException':
-        print("La table 'user' n'existe pas.")
-    else:
-        print("Erreur lors de la connexion à DynamoDB :", e)
+    print("Erreur lors de la connexion à DynamoDB :", e)
 
 # Créer la table user si elle n'existe pas
-try:
-    table = dynamodb.create_table(
-        TableName='user',
-        KeySchema=[
-            {
-                'AttributeName': 'id',
-                'KeyType': 'HASH'  # Partition key
-            }
-        ],
-        AttributeDefinitions=[
-            {
-                'AttributeName': 'id',
-                'AttributeType': 'N'
-            }
-        ],
-        ProvisionedThroughput={
-            'ReadCapacityUnits': 5,
-            'WriteCapacityUnits': 5
-        }
-    )
-    # Attendre que la table soit créée
-    table.meta.client.get_waiter('table_exists').wait(TableName='user')
-    print("Table 'user' créée avec succès.")
-except ClientError as e:
-    if e.response['Error']['Code'] == 'ResourceInUseException':
-        print("La table 'user' existe déjà.")
-    else:
-        print("Erreur lors de la création de la table 'user':", e)
+# try:
+#     table = dynamodb.create_table(
+#         TableName='user',
+#         KeySchema=[
+#             {
+#                 'AttributeName': 'username',
+#                 'KeyType': 'HASH'  # Partition key
+#             }
+#         ],
+#         AttributeDefinitions=[
+#             {
+#                 'AttributeName': 'username',
+#                 'AttributeType': 'S'
+#             }
+#         ],
+#         ProvisionedThroughput={
+#             'ReadCapacityUnits': 5,
+#             'WriteCapacityUnits': 5
+#         }
+#     )
+#     # Attendre que la table soit créée
+#     table.meta.client.get_waiter('table_exists').wait(TableName='user')
+#     print("Table 'user' créée avec succès.")
+# except ClientError as e:
+#     print("Erreur lors de la création de la table 'user':", e)
 
 table = dynamodb.Table('user')
 
@@ -71,20 +66,31 @@ def home():
 @app.route('/register', methods=["POST"])
 def registerUser():
     data = request.get_json()
-    user_id = int(table.item_count) + 1  # Simuler un ID auto-incrémenté
+    username = data.get('username')
+    email = data.get('email')
+
+    # Vérifier si l'adresse e-mail est déjà utilisée
+    response = table.scan(FilterExpression=Attr('email').eq(email))
+    existing_user_email = response.get('Items')
+    if existing_user_email:
+        return jsonify({'error': 'Email already exists'}), 400
+
+    # Vérifier si le nom d'utilisateur est déjà utilisé
+    response = table.scan(FilterExpression=Attr('username').eq(username))
+    existing_user_username = response.get('Items')
+    if existing_user_username:
+        return jsonify({'error': 'Username already exists'}), 400
+
+   
     password = data['password']
-    # Générer un sel aléatoire pour le hachage du mot de passe
     salt = bcrypt.gensalt()
-    # Hacher le mot de passe avec le sel
     hashed_password = bcrypt.hashpw(password.encode('utf-8'), salt)
     new_user = {
-        'id': user_id,
-        'username': data['username'],
-        'email': data['email'],
-        'password': hashed_password.decode('utf-8'),  # Convertir le hachage en chaîne de caractères
-        'salt': salt.decode('utf-8')  # Convertir le sel en chaîne de caractères
+        'username': username,
+        'email': email,
+        'password': hashed_password.decode('utf-8'),
+        'salt': salt.decode('utf-8')  
     }
-    
     try:
         table.put_item(Item=new_user)
         message = 'User registered successfully'
@@ -92,6 +98,108 @@ def registerUser():
     except ClientError as e:
         message = 'Error registering user'
         return jsonify({'error': message, 'details': str(e)}), 500
+
+
+
+@app.route('/user/<string:username>', methods=["PUT"])
+def updateUser(username):
+    data = request.get_json()
+
+    # Vérifier les champs autorisés
+    allowed_fields = {'email', 'password'}
+
+    # Vérifier si des champs non autorisés sont présents dans la requête
+    for field in data.keys():
+        if field not in allowed_fields:
+            return jsonify({'error': f'Field "{field}" not allowed for update'}), 400
+
+    # Construire l'expression de mise à jour
+    update_expression = 'SET '
+    expression_attribute_values = {}
+
+    # Vérifier si le mot de passe doit être mis à jour
+    if 'password' in data:
+        salt = bcrypt.gensalt()
+        hashed_password = bcrypt.hashpw(data['password'].encode('utf-8'), salt)
+        update_expression += 'password = :password, '
+        expression_attribute_values[':password'] = hashed_password.decode('utf-8')
+
+    # Vérifier si l'email doit être mis à jour
+    if 'email' in data:
+        update_expression += 'email = :email, '
+        expression_attribute_values[':email'] = data['email']
+
+    # Supprimer le sel s'il n'est pas nécessaire
+    if 'password' not in data:
+        expression_attribute_values.pop(':salt', None)
+
+    # Vérifier si des champs ont été spécifiés pour la mise à jour
+    if not update_expression.endswith('SET '):
+        update_expression = update_expression[:-2]  # Supprimer la virgule et l'espace à la fin
+
+        try:
+            response = table.update_item(
+                Key={'username': username},
+                UpdateExpression=update_expression,
+                ExpressionAttributeValues=expression_attribute_values,
+                ReturnValues='UPDATED_NEW'
+            )
+            updated_user = response.get('Attributes')
+            if updated_user:
+                return jsonify({'message': 'User updated successfully', 'user': updated_user}), 200
+            else:
+                return jsonify({'message': 'User not found'}), 404
+        except ClientError as e:
+            return jsonify({'error': 'Error updating user', 'details': str(e)}), 500
+    else:
+        return jsonify({'error': 'No fields to update provided'}), 400
+
+@app.route('/users', methods=["GET"])
+def listUsers():
+    users = get_all_users()
+    return jsonify({'users': users})
+
+
+def get_all_users():
+    try:
+        response = table.scan()
+        users = response.get('Items', [])
+        # Supprimer les champs sensibles avant de renvoyer les utilisateurs
+        for user in users:
+            user.pop('password', None)
+            user.pop('salt', None)
+        return users
+    except ClientError as e:
+        print("Error getting all users:", e)
+        return []
+
+
+
+@app.route('/user/<string:username>', methods=["GET"])
+def getUserByPseudo(username):
+    try:
+        response = table.get_item(Key={'username': username})
+        user = response.get('Item')
+        if user:
+            # Supprimer les champs sensibles avant de renvoyer l'utilisateur
+            user.pop('password', None)
+            return jsonify({'user': user}), 200
+        else:
+            return jsonify({'message': 'User not found'}), 404
+    except ClientError as e:
+        return jsonify({'error': 'Error getting user', 'details': str(e)}), 500
+
+@app.route('/user/<string:username>', methods=["DELETE"])
+def deleteUser(username):
+    try:
+        response = table.delete_item(Key={'username': username}, ReturnValues='ALL_OLD')
+        deleted_user = response.get('Attributes')
+        if deleted_user:
+            return jsonify({'message': 'User deleted successfully', 'user': deleted_user}), 200
+        else:
+            return jsonify({'message': 'User not found'}), 404
+    except ClientError as e:
+        return jsonify({'error': 'Error deleting user', 'details': str(e)}), 500
 
 if __name__ == '__main__':
     app.run(debug=True)
