@@ -1,14 +1,16 @@
-from boto3.dynamodb.conditions import Key, Attr
-from flask import Flask, render_template, request, jsonify
+from boto3.dynamodb.conditions import Attr
+from flask import Flask, render_template, request, jsonify,make_response
 from dotenv import load_dotenv
 import os
 import boto3
 from botocore.exceptions import ClientError
 import bcrypt
+import jwt
 
 load_dotenv()
 
 app = Flask(__name__)
+app.config["SECRET_KEY"] = os.getenv('SECRET_KEY')
 
 # Récupérer les clés d'accès depuis les variables d'environnement
 aws_access_key_id = os.getenv('AWS_ACCESS_KEY_ID')
@@ -89,7 +91,8 @@ def registerUser():
         'username': username,
         'email': email,
         'password': hashed_password.decode('utf-8'),
-        'salt': salt.decode('utf-8')  
+        'salt': salt.decode('utf-8'),
+        'is_admin': False
     }
     try:
         table.put_item(Item=new_user)
@@ -118,11 +121,15 @@ def updateUser(username):
     expression_attribute_values = {}
 
     # Vérifier si le mot de passe doit être mis à jour
+    # Vérifier si le mot de passe doit être mis à jour
     if 'password' in data:
         salt = bcrypt.gensalt()
         hashed_password = bcrypt.hashpw(data['password'].encode('utf-8'), salt)
         update_expression += 'password = :password, '
         expression_attribute_values[':password'] = hashed_password.decode('utf-8')
+        update_expression += 'salt = :salt, '
+        expression_attribute_values[':salt'] = salt.decode('utf-8')
+
 
     # Vérifier si l'email doit être mis à jour
     if 'email' in data:
@@ -200,6 +207,47 @@ def deleteUser(username):
             return jsonify({'message': 'User not found'}), 404
     except ClientError as e:
         return jsonify({'error': 'Error deleting user', 'details': str(e)}), 500
+
+
+def authenticate(username, password):
+    # Récupérer l'utilisateur depuis la base de données en fonction du nom d'utilisateur
+    response = table.get_item(Key={'username': username})
+    user = response.get('Item')
+    if user:
+        # Vérifier si le mot de passe correspond
+        hashed_password = bcrypt.hashpw(password.encode('utf-8'), user['salt'].encode('utf-8'))
+        if hashed_password == user['password'].encode('utf-8'):
+            return user
+    return None
+
+@app.route('/login', methods=['POST'])
+def login():
+    data = request.get_json()
+    username = data.get('username')
+    password = data.get('password')
+
+    user = authenticate(username, password)
+    if user:
+        # Vérifier si l'utilisateur est un admin
+        is_admin = user.get('role') == 'admin'
+
+        # Générer le token avec le nom d'utilisateur et le statut d'admin
+        token_data = {
+            'username': username,
+            'is_admin': is_admin
+        }
+        token = jwt.encode(token_data, app.config['SECRET_KEY'], algorithm='HS256')
+
+        # Créer une réponse contenant le token
+        response = make_response(jsonify({'token': token}))
+
+        
+        # Ajouter le token aux cookies de la réponse (ou stocker ailleurs selon vos besoins)
+        response.set_cookie('token', token)
+
+        return response
+    else:
+        return jsonify({'error': 'Invalid credentials'}), 401
 
 if __name__ == '__main__':
     app.run(debug=True)
