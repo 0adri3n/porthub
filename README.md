@@ -1,3 +1,5 @@
+<p align="center"><img src="https://github.com/0adri3n/porthub/assets/62818208/747d8c7c-3958-44a9-ad13-0b1d5d2e68d1" width=300></p>
+
 <h1 align="center" id="title">porthub</h1>
 
 <p id="description">Secure &amp; Temporary chatroom</p>
