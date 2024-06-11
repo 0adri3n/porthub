@@ -1,0 +1,87 @@
+/* CSS pour aligner le contenu verticalement au centre */
+html, body {
+    height: 100%;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #1b1b1b; /* Fond noir */
+    color: #ffffff; /* Texte blanc */
+    display: flex;
+    flex-direction: column;
+}
+
+header {
+    background-color: #ffa31a; /* Orange */
+    padding: 20px 0;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.logo img {
+    width: 100px; /* Largeur du logo */
+    height: auto; /* Hauteur automatique pour conserver les proportions */
+}
+
+.nav {
+    display: flex;
+    gap: 20px; /* Espace entre les liens */
+}
+
+.nav a {
+    color: #ffffff; /* Texte blanc */
+    text-decoration: none;
+    font-size: 1.2em; /* Taille de police augmentée */
+    padding: 10px 15px; /* Padding ajouté */
+}
+
+.connexion {
+    display: flex;
+    align-items: center;
+}
+
+.connexion .btn {
+    color: #ffffff; /* Texte blanc */
+    background-color: transparent;
+    border: 1px solid #ffffff;
+    padding: 10px 20px;
+    border-radius: 5px;
+    text-decoration: none;
+    transition: background-color 0.3s, color 0.3s;
+    font-size: 1.2em; /* Taille de police augmentée */
+}
+
+.connexion .btn:hover {
+    background-color: #ffffff;
+    color: #ffa31a; /* Orange */
+}
+
+main {
+    flex: 1; /* Contenu principal prendra l'espace disponible */
+    display: flex;
+    justify-content: center; /* Alignement horizontal au centre */
+    align-items: center; /* Alignement vertical au centre */
+}
+
+.centered-container {
+    text-align: center; /* Contenu centré horizontalement */
+}
+
+ul {
+    list-style-type: none; /* Supprime les puces */
+    padding: 0; /* Supprime le padding par défaut */
+}
+
+footer {
+    background-color: #ffa31a; /* Orange */
+    padding: 20px 0;
+    text-align: center;
+}
