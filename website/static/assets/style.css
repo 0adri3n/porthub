@@ -15,17 +15,15 @@ body {
 
 header {
     background-color: #ffa31a; /* Orange */
-    padding: 20px 0; /* Augmentation du padding pour agrandir le header */
+    padding: 20px 0;
 }
 
 .container {
     max-width: 1200px;
     margin: 0 auto;
-    padding: 0 20px;
-}
-
-.logo {
-    float: left; /* Logo aligné à gauche */
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 }
 
 .logo img {
@@ -33,24 +31,37 @@ header {
     height: auto; /* Hauteur automatique pour conserver les proportions */
 }
 
-ul {
-    list-style-type: none; /* Supprime les puces */
-    padding: 0; /* Supprime le padding par défaut */
-}
-
-
 .nav {
-    display: inline-block; /* Les liens des pages en ligne */
+    display: flex;
+    gap: 20px; /* Espace entre les liens */
 }
 
 .nav a {
     color: #ffffff; /* Texte blanc */
     text-decoration: none;
-    margin: 0 20px; /* Espacement des liens */
+    font-size: 1.2em; /* Taille de police augmentée */
+    padding: 10px 15px; /* Padding ajouté */
 }
 
 .connexion {
-    float: right; /* Bouton de connexion aligné à droite */
+    display: flex;
+    align-items: center;
+}
+
+.connexion .btn {
+    color: #ffffff; /* Texte blanc */
+    background-color: transparent;
+    border: 1px solid #ffffff;
+    padding: 10px 20px;
+    border-radius: 5px;
+    text-decoration: none;
+    transition: background-color 0.3s, color 0.3s;
+    font-size: 1.2em; /* Taille de police augmentée */
+}
+
+.connexion .btn:hover {
+    background-color: #ffffff;
+    color: #ffa31a; /* Orange */
 }
 
 main {
@@ -64,20 +75,9 @@ main {
     text-align: center; /* Contenu centré horizontalement */
 }
 
-.btn {
-    display: inline-block;
-    padding: 10px 20px;
-    text-decoration: none;
-    color: #ffffff; /* Texte blanc */
-    background-color: #808080; /* Gris */
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: background-color 0.3s;
-}
-
-.btn:hover {
-    background-color: #292929; /* Gris foncé au survol */
+ul {
+    list-style-type: none; /* Supprime les puces */
+    padding: 0; /* Supprime le padding par défaut */
 }
 
 footer {
