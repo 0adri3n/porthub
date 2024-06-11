@@ -1,0 +1,87 @@
+/* CSS pour aligner le contenu verticalement au centre */
+html, body {
+    height: 100%;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #1b1b1b; /* Fond noir */
+    color: #ffffff; /* Texte blanc */
+    display: flex;
+    flex-direction: column;
+}
+
+header {
+    background-color: #ffa31a; /* Orange */
+    padding: 20px 0; /* Augmentation du padding pour agrandir le header */
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+.logo {
+    float: left; /* Logo aligné à gauche */
+}
+
+.logo img {
+    width: 100px; /* Largeur du logo */
+    height: auto; /* Hauteur automatique pour conserver les proportions */
+}
+
+ul {
+    list-style-type: none; /* Supprime les puces */
+    padding: 0; /* Supprime le padding par défaut */
+}
+
+
+.nav {
+    display: inline-block; /* Les liens des pages en ligne */
+}
+
+.nav a {
+    color: #ffffff; /* Texte blanc */
+    text-decoration: none;
+    margin: 0 20px; /* Espacement des liens */
+}
+
+.connexion {
+    float: right; /* Bouton de connexion aligné à droite */
+}
+
+main {
+    flex: 1; /* Contenu principal prendra l'espace disponible */
+    display: flex;
+    justify-content: center; /* Alignement horizontal au centre */
+    align-items: center; /* Alignement vertical au centre */
+}
+
+.centered-container {
+    text-align: center; /* Contenu centré horizontalement */
+}
+
+.btn {
+    display: inline-block;
+    padding: 10px 20px;
+    text-decoration: none;
+    color: #ffffff; /* Texte blanc */
+    background-color: #808080; /* Gris */
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.btn:hover {
+    background-color: #292929; /* Gris foncé au survol */
+}
+
+footer {
+    background-color: #ffa31a; /* Orange */
+    padding: 20px 0;
+    text-align: center;
+}
