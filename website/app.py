@@ -92,7 +92,8 @@ def registerUser():
         'email': email,
         'password': hashed_password.decode('utf-8'),
         'salt': salt.decode('utf-8'),
-        'is_admin': False
+        'is_admin': False,
+        'credit':0
     }
     try:
         table.put_item(Item=new_user)
@@ -225,6 +226,7 @@ def login():
     data = request.get_json()
     username = data.get('username')
     password = data.get('password')
+    credit = data.get('credit')
 
     user = authenticate(username, password)
     if user:
@@ -234,7 +236,8 @@ def login():
         # Générer le token avec le nom d'utilisateur et le statut d'admin
         token_data = {
             'username': username,
-            'is_admin': is_admin
+            'is_admin': is_admin,
+            'credit': credit
         }
         token = jwt.encode(token_data, app.config['SECRET_KEY'], algorithm='HS256')
 
