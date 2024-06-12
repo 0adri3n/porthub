@@ -4,14 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>porthub - Chat Sécurisé</title>
-    <!-- Mettez à jour le chemin vers le fichier CSS -->
     <link rel="stylesheet" href="../static/assets/style.css">
+    <link rel="stylesheet" href="../static/assets/style_panel.css">
 </head>
 <body>
     <header>
         <div class="container">
             <div class="logo">
                 <a href="index.html">
+                    <!-- Mettez à jour le chemin vers l'image -->
                     <img src="../static/assets/img/logo.jpg" alt="Logo de votre site">
                 </a>
             </div>
@@ -26,25 +27,31 @@
         </div>
     </header>
     <main>
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <script>alert("{{ message }}")</script>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
         <div class="centered-container">
-            <section id="hero">
-                <h1>Bienvenue sur Chat Sécurisé</h1>
-                <p>Un endroit sûr pour discuter en toute confidentialité.</p>
-            </section>
-            <section id="features">
-                <h2>Fonctionnalités</h2>
-                <ul>
-                    <li>Chiffrement de bout en bout</li>
-                    <li>Salons de discussion privés</li>
-                    <li>Messages qui s'autodétruisent</li>
-                </ul>
-            </section>
-            <section id="about">
-                <h2>À propos de nous</h2>
-                <p>Chat Sécurisé s'engage à fournir un environnement de chat sécurisé et privé pour tous ses utilisateurs.</p>
-            </section>
+            <h2>Créer une Configuration</h2>
+            <form action="/create_config" method="POST">
+                <div>
+                    <label for="password">Mot de passe:</label>
+                    <input type="password" id="password" name="password" required>
+                </div>
+                <div>
+                    <label for="users_count">Nombre d'utilisateurs:</label>
+                    <input type="number" id="users_count" name="users_count" required>
+                </div>
+                <div>
+                    <button type="submit">Créer</button>
+                </div>
+            </form>
         </div>
     </main>
+    
     <footer>
         <div class="container">
             <p>&copy; 2024 Chat Sécurisé. Tous droits réservés.</p>
