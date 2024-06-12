@@ -1,5 +1,5 @@
 from boto3.dynamodb.conditions import Attr
-from flask import Flask, render_template, request, jsonify,make_response
+from flask import Flask, redirect, render_template, request, jsonify,make_response, url_for,flash
 from dotenv import load_dotenv
 import os
 import boto3
@@ -65,7 +65,7 @@ table = dynamodb.Table('user')
 def home():
     return render_template('index.html')
 
-@app.route('/register', methods=["POST"])
+@app.route('/registerdb', methods=["POST"])
 def registerUser():
     data = request.get_json()
     username = data.get('username')
@@ -221,23 +221,23 @@ def authenticate(username, password):
             return user
     return None
 
-@app.route('/login', methods=['POST'])
-def login():
-    data = request.get_json()
-    username = data.get('username')
-    password = data.get('password')
-    credit = data.get('credit')
+@app.route('/logindb', methods=['POST'])
+def logindb():
+    
+    username = request.form["username"]
+    password = request.form["password"]
+
+    print(username,password)
 
     user = authenticate(username, password)
     if user:
-        # Vérifier si l'utilisateur est un admin
         is_admin = user.get('role') == 'admin'
+        credit = user.get('credit')
 
-        # Générer le token avec le nom d'utilisateur et le statut d'admin
         token_data = {
             'username': username,
             'is_admin': is_admin,
-            'credit': credit
+            'credit': str(credit)
         }
         token = jwt.encode(token_data, app.config['SECRET_KEY'], algorithm='HS256')
 
@@ -248,9 +248,16 @@ def login():
         # Ajouter le token aux cookies de la réponse (ou stocker ailleurs selon vos besoins)
         response.set_cookie('token', token)
 
-        return response
+        return redirect(url_for('login'))
     else:
         return jsonify({'error': 'Invalid credentials'}), 401
+    
+@app.route('/register')
+def register():
+    return render_template("register.html")
 
+@app.route('/login')
+def login():
+    return render_template("connexion.html")
 if __name__ == '__main__':
     app.run(debug=True)

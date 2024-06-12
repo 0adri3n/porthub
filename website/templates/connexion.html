@@ -7,8 +7,10 @@
     <!-- Mettez à jour le chemin vers le fichier CSS -->
     <link rel="stylesheet" href="../static/assets/style.css">
     <link rel="stylesheet" href="../static/assets/styleConnexion.css">
+    <link rel="scr" href="../static/assets/styleConnexion.css">
 </head>
 <body>
+    <script scr="../static/script/connexion.js"></script>
     <header>
         <div class="container">
             <div class="logo">
@@ -32,13 +34,13 @@
             <div class="InnerWrap">
                 <h2 class="labelLogin">Login</h2>
                 <p class="textExplication">Enter your account details</p>
-                <form class="loginForm">
-                    <input class="InputForm" type="text" placeholder="Username">
-                    <input class="InputForm" type="password" placeholder="Password">
+                <form class="loginForm" action="/logindb" method="POST">
+                    <input name="username"  class="InputForm" type="text" placeholder="Username">
+                    <input name="password" class="InputForm" type="password" placeholder="Password">
                     <!-- <a class="passwordForgot">Forgot Password ?</a> -->
                     <button class="loginButton" type="submit"><span class="textLoginbtn">Login</span></button>
                 </form>
-                <a href="register.html" class="signupLink">Don't have an account ? Sign Up</a>
+                <a href="register" class="signupLink">Don't have an account ? Sign Up</a>
             </div>
         </div>
     </main>
