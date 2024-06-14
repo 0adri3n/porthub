@@ -1,0 +1,42 @@
+form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px; /* Espace entre les champs du formulaire */
+    background-color: #333; /* Couleur de fond du formulaire */
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+form div {
+    display: flex;
+    flex-direction: column;
+}
+
+label {
+    margin-bottom: 5px;
+    font-size: 1em; /* Taille de police */
+}
+
+input {
+    padding: 10px;
+    font-size: 1em; /* Taille de police */
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+button {
+    padding: 10px 20px;
+    font-size: 1.2em; /* Taille de police augmentée */
+    color: #ffffff; /* Texte blanc */
+    background-color: #ffa31a; /* Orange */
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+button:hover {
+    background-color: #ffffff;
+    color: #ffa31a; /* Orange */
+}

@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>porthub - Chat Sécurisé</title>
+    <link rel="stylesheet" href="../static/assets/style.css">
+    <link rel="stylesheet" href="../static/assets/style_panel.css">
+</head>
+<body>
+    <header>
+        <div class="container">
+            <div class="logo">
+                <a href="index.html">
+                    <!-- Mettez à jour le chemin vers l'image -->
+                    <img src="../static/assets/img/logo.jpg" alt="Logo de votre site">
+                </a>
+            </div>
+            <nav class="nav">
+                <a href="index.html">Accueil</a>
+                <a href="connexion.html">Connexion</a>
+                <a href="info.html">Info</a>
+            </nav>
+            <div class="connexion">
+                <a href="connexion.html" class="btn">Se connecter</a>
+            </div>
+        </div>
+    </header>
+    <main>
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <script>alert("{{ message }}")</script>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+        <div class="centered-container">
+            <h2>Créer une Configuration</h2>
+            <form action="/create_config" method="POST">
+                <div>
+                    <label for="password">Mot de passe:</label>
+                    <input type="password" id="password" name="password" required>
+                </div>
+                <div>
+                    <label for="users_count">Nombre d'utilisateurs:</label>
+                    <input type="number" id="users_count" name="users_count" required>
+                </div>
+                <div>
+                    <button type="submit">Créer</button>
+                </div>
+            </form>
+        </div>
+    </main>
+    
+    <footer>
+        <div class="container">
+            <p>&copy; 2024 Chat Sécurisé. Tous droits réservés.</p>
+        </div>
+    </footer>
+</body>
+</html>
