@@ -336,22 +336,43 @@ def logindb():
 @app.route('/redirection')
 @jwt_required(optional=True,locations='cookies')
 def redirection():
-    current_user = get_jwt_identity()
     try :
+        current_user = get_jwt_identity()
+    
         if current_user['is_admin']==True:
-            return redirect(url_for('admin'))
+            return redirect(url_for('adminUser'))
     except :
         return redirect(url_for('login'))
+    return redirect(url_for('login'))
 
-@app.route('/admin')
+@app.route('/adminUser')
 @jwt_required(optional=True,locations='cookies')    
-def admin():
+def adminUser():
     current_user = get_jwt_identity()
     try : 
         if current_user['is_admin']==True:
-            return render_template('admin.html')
+            return render_template('adminUser.html')
     except :
         return redirect(url_for('login'))
+    
+@app.route('/email/<string:email>', methods=["GET"])
+def getEmail(email):
+    try:
+        # Recherche dans la base de données DynamoDB si l'e-mail existe
+        response = table.scan(FilterExpression=Attr('email').eq(email))
+        user = response.get('Items')
+
+        if user:
+            # Supprimer les champs sensibles avant de renvoyer l'utilisateur
+            for u in user:
+                u.pop('password', None)
+                u.pop('salt', None)
+            return jsonify({'user': user}), 200
+        else:
+            return jsonify({'message': 'Email not found'}), 404
+    except ClientError as e:
+        return jsonify({'error': 'Error checking email', 'details': str(e)}), 500
+
 
 
 @app.route('/login')

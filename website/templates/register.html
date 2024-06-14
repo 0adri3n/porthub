@@ -7,6 +7,7 @@
     <!-- Mettez à jour le chemin vers le fichier CSS -->
     <link rel="stylesheet" href="../static/assets/style.css">
     <link rel="stylesheet" href="../static/assets/styleConnexion.css">
+    <script src="../static/scripts/register.js"></script>
 </head>
 <body>
     <header>
@@ -35,11 +36,12 @@
                 <form class="loginForm" action="/registerdb" method="POST">
                     <input name="email" class="InputForm" type="text" placeholder="Email">
                     <input name="username" class="InputForm" type="text" placeholder="Username">
+                    <div class="error-message" style="color: red;"></div> <!-- Ajout de l'élément pour afficher les messages d'erreur -->
                     <input name="password" class="InputForm" type="password" placeholder="Password">
-                    <input class="InputForm" type="password" placeholder="Confirm Password" >
-                    
+                    <input name="confirmPassword" class="InputForm" type="password" placeholder="Confirm Password">
                     <button class="loginButton" type="submit"><span class="textLoginbtn">Register</span></button>
                 </form>
+                
                 <a href="login" class="signupLink">Already registered ? Sign in</a>
             </div>
         </div>

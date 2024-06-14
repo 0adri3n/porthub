@@ -1,0 +1,142 @@
+/* Reset des styles de base */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* Styles généraux */
+body {
+    font-family: Arial, sans-serif;
+    line-height: 1.6;
+    
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+
+
+.logo img {
+    height: 50px;
+    width: auto;
+}
+
+.nav {
+    margin-left: 20px;
+}
+
+.nav a {
+    color: #fff;
+    text-decoration: none;
+    margin-right: 20px;
+}
+
+.connexion {
+    margin-left: auto;
+}
+
+.btn {
+    background-color: #ffa31a;
+    color: #fff;
+    border: none;
+    padding: 10px 20px;
+    cursor: pointer;
+}
+
+.btn:hover {
+    background-color: #ffa31a;
+}
+
+main {
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    width: 70%;
+    justify-content: center;
+    align-items: center;
+    margin: 0 auto;    
+}
+
+h1 {
+    margin-bottom: 20px;
+    font-size: 2.5rem;
+    text-align: center;
+}
+
+#searchInput {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 20px;
+    font-size: 1rem;
+    border: 1px solid #3333;
+    border-radius: 4px;
+}
+
+#userTable {
+    width: 100%;
+    border-collapse: collapse;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    background-color: #333;
+}
+
+#userTable th,
+#userTable td {
+    padding: 12px 15px;
+    text-align: left;
+    border-bottom: 1px solid #333;
+}
+
+#userTable th {
+    background-color: #ffa31a;
+    color: #fff;
+}
+
+#userTable tbody tr:nth-child(even) {
+    background-color: #1a1a1a;
+}
+
+#userTable tbody tr:hover {
+    background-color: #2a2a2a;
+}
+
+
+
+@media (max-width: 768px) {
+    .nav {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        margin-left: 0;
+    }
+    
+    .nav a {
+        margin-right: 0;
+        margin-bottom: 10px;
+    }
+    
+    .connexion {
+        text-align: center;
+        margin-left: 0;
+    }
+}
+
+.btnEdit{
+    color: #ffffff; /* Texte blanc */
+    background-color: transparent;
+    border: 1px solid #ffffff;
+    padding: 5px 10px;
+    border-radius: 5px;
+    text-decoration: none;
+    transition: background-color 0.3s, color 0.3s;
+    font-size: 1.2em;
+}
+
+.btnEdit:hover{
+    color: #ffa31a; 
+    background-color: #ffffff;
+}
