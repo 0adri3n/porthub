@@ -68,7 +68,7 @@ def home():
 @app.route('/registerdb', methods=["POST"])
 def registerUser():
     data = request.get_json()
-    username = data.get('username')
+    username = request.form['username']
     email = data.get('email')
 
     # Vérifier si l'adresse e-mail est déjà utilisée
@@ -259,5 +259,7 @@ def register():
 @app.route('/login')
 def login():
     return render_template("connexion.html")
+
+
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(host="10.3.202.41",port=5000,debug=True)
