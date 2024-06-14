@@ -257,5 +257,7 @@ def register():
 @app.route('/login')
 def login():
     return render_template("connexion.html")
+
+
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(host="10.3.202.41",port=5000,debug=True)
