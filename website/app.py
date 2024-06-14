@@ -239,6 +239,8 @@ def updateUser(username):
         return jsonify({'error': 'No fields to update provided'}), 400
 
 @app.route('/users', methods=["GET"])
+@jwt_required()
+@admin_required
 def listUsers():
     users = get_all_users()
     return jsonify({'users': users})
@@ -274,16 +276,21 @@ def getUserByPseudo(username):
         return jsonify({'error': 'Error getting user', 'details': str(e)}), 500
 
 @app.route('/user/<string:username>', methods=["DELETE"])
+@jwt_required(optional=True, locations=["cookies"])
 def deleteUser(username):
-    try:
-        response = table.delete_item(Key={'username': username}, ReturnValues='ALL_OLD')
-        deleted_user = response.get('Attributes')
-        if deleted_user:
-            return jsonify({'message': 'User deleted successfully', 'user': deleted_user}), 200
-        else:
-            return jsonify({'message': 'User not found'}), 404
-    except ClientError as e:
-        return jsonify({'error': 'Error deleting user', 'details': str(e)}), 500
+    current_user = get_jwt_identity()
+    if not current_user:
+        return redirect(url_for('login'))
+    if current_user['is_admin']==True :
+        try:
+            response = table.delete_item(Key={'username': username}, ReturnValues='ALL_OLD')
+            deleted_user = response.get('Attributes')
+            if deleted_user:
+                return jsonify({'message': 'User deleted successfully', 'user': deleted_user}), 200
+            else:
+                return jsonify({'message': 'User not found'}), 404
+        except ClientError as e:
+            return jsonify({'error': 'Error deleting user', 'details': str(e)}), 500
 
 
 def authenticate(username, password):
@@ -305,7 +312,7 @@ def logindb():
 
     user = authenticate(username, password)
     if user:
-        is_admin = user.get('role') == 'admin'
+        is_admin = user.get('is_admin') == True
         credit = user.get('credit')
 
         token_data = {
@@ -313,18 +320,39 @@ def logindb():
             'is_admin': is_admin,
             'credit': str(credit)
         }
+       
         token = create_access_token(identity=token_data)
 
-        # Créer une réponse contenant le token
-        response = make_response(redirect(url_for('panel')))
+        
+        response = make_response(redirect(url_for('redirection')))
+    
+        response.set_cookie('access_token_cookie', token)
         
         # Ajouter le token aux cookies de la réponse (ou stocker ailleurs selon vos besoins)
-        response.set_cookie('access_token_cookie', token)
-
         return response
     else:
         return jsonify({'error': 'Invalid credentials'}), 401
     
+@app.route('/redirection')
+@jwt_required(optional=True,locations='cookies')
+def redirection():
+    current_user = get_jwt_identity()
+    try :
+        if current_user['is_admin']==True:
+            return redirect(url_for('admin'))
+    except :
+        return redirect(url_for('login'))
+
+@app.route('/admin')
+@jwt_required(optional=True,locations='cookies')    
+def admin():
+    current_user = get_jwt_identity()
+    try : 
+        if current_user['is_admin']==True:
+            return render_template('admin.html')
+    except :
+        return redirect(url_for('login'))
+
 
 @app.route('/login')
 @jwt_required(optional=True,locations="cookies")
