@@ -16,16 +16,31 @@ import signal
 import sys
 from websockets import WebSocketServerProtocol
 from typing import Set
+from flask_jwt_extended import JWTManager, jwt_required, get_jwt_identity, create_access_token, get_jwt_identity,verify_jwt_in_request
+from functools import wraps
+
+
 
 load_dotenv()
 
 app = Flask(__name__)
 app.config["SECRET_KEY"] = os.getenv('SECRET_KEY')
+app.config["JWT_SECRET_KEY"] = os.getenv('JWT_SECRET_KEY')
+app.config["JWT_TOKEN_LOCATION"] = ["cookies"]
+app.config["JWT_COOKIE_SECURE"] = True  # Mettre à True en production avec HTTPS
+app.config["JWT_ACCESS_COOKIE_PATH"] = "/"
+app.config["JWT_REFRESH_COOKIE_PATH"] = "/refresh"
+app.config["JWT_COOKIE_CSRF_PROTECT"] = True  # Mettre à True en production
+
 
 # Récupérer les clés d'accès depuis les variables d'environnement
 aws_access_key_id = os.getenv('AWS_ACCESS_KEY_ID')
 aws_secret_access_key = os.getenv('AWS_SECRET_ACCESS_KEY')
 aws_region = os.getenv('AWS_REGION', 'eu-west-3')  # Assurez-vous de définir votre région AWS dans le fichier .env
+
+
+
+
 
 # Utiliser les clés d'accès pour créer un client boto3
 dynamodb = boto3.resource(
@@ -73,7 +88,10 @@ table = dynamodb.Table('user')
 
 
 app = Flask(__name__)
+jwt = JWTManager(app)
 app.secret_key = "porthub"
+
+
 
 connected_clients: Set[WebSocketServerProtocol] = set()
 websocket_threads = []
@@ -107,6 +125,17 @@ def stop_websocket(port):
         if thread.name == f"WebSocket Thread - {port}":
             thread.stop_event.set()
             thread.join()
+
+
+def admin_required(fn):
+    @wraps(fn)
+    def wrapper(*args, **kwargs):
+        verify_jwt_in_request()
+        identity = get_jwt_identity()
+        if not identity.get('is_admin'):
+            return jsonify({'message': 'Admin access required'}), 403
+        return fn(*args, **kwargs)
+    return wrapper
 
 @app.route('/')
 def home():
@@ -151,6 +180,8 @@ def registerUser():
 
 
 @app.route('/user/<string:username>', methods=["PUT"])
+@jwt_required()
+@admin_required
 def updateUser(username):
     data = request.get_json()
 
@@ -268,11 +299,9 @@ def authenticate(username, password):
 
 @app.route('/logindb', methods=['POST'])
 def logindb():
-    
     username = request.form["username"]
     password = request.form["password"]
-
-    print(username,password)
+    print(username, password)
 
     user = authenticate(username, password)
     if user:
@@ -284,26 +313,32 @@ def logindb():
             'is_admin': is_admin,
             'credit': str(credit)
         }
-        token = jwt.encode(token_data, app.config['SECRET_KEY'], algorithm='HS256')
+        token = create_access_token(identity=token_data)
 
         # Créer une réponse contenant le token
-        response = make_response(jsonify({'token': token}))
-
+        response = make_response(redirect(url_for('panel')))
         
         # Ajouter le token aux cookies de la réponse (ou stocker ailleurs selon vos besoins)
-        response.set_cookie('token', token)
+        response.set_cookie('access_token_cookie', token)
 
-        return redirect(url_for('login'))
+        return response
     else:
         return jsonify({'error': 'Invalid credentials'}), 401
     
-@app.route('/register')
-def register():
-    return render_template("register.html")
 
 @app.route('/login')
+@jwt_required(optional=True,locations="cookies")
 def login():
+    if get_jwt_identity():
+        return redirect(url_for('panel'))
     return render_template("connexion.html")
+
+@app.route('/register')
+@jwt_required(optional=True,locations="cookies")
+def register():
+    if get_jwt_identity():
+        return redirect(url_for('panel'))
+    return render_template("register.html")
 
 
 
@@ -336,10 +371,12 @@ def create_config():
     return redirect(url_for("panel"))
 
 @app.route('/panel')
+@jwt_required(optional=True, locations=["cookies"])
 def panel():
-    # Requête à la DB pour SELECT les configs de l'utilisateur
-    # et les afficher dans un tableau avec un bouton démarrer (mon job)
-    return render_template('panel.html')
+    current_user = get_jwt_identity()
+    if not current_user:
+        return redirect(url_for('login'))  # Redirect to the login page if JWT token is not present
+    return render_template('panel.html', user=current_user)
 
 @app.route('/stop_websocket/<int:port>', methods=["POST"])
 def stop_websocket_route(port):
@@ -362,6 +399,6 @@ def signal_handler(sig, frame):
 
 if __name__ == '__main__':
     signal.signal(signal.SIGINT, signal_handler)
-    app.run(host="10.3.202.41",port=5000,debug=True)
+    app.run(debug=True)
 
     
