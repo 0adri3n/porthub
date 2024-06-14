@@ -67,9 +67,9 @@ def home():
 
 @app.route('/registerdb', methods=["POST"])
 def registerUser():
-    data = request.get_json()
-    username = data.get('username')
-    email = data.get('email')
+    username = request.form['username']
+    email = request.form['email']
+    password = request.form['password']
 
     # Vérifier si l'adresse e-mail est déjà utilisée
     response = table.scan(FilterExpression=Attr('email').eq(email))
@@ -83,8 +83,6 @@ def registerUser():
     if existing_user_username:
         return jsonify({'error': 'Username already exists'}), 400
 
-   
-    password = data['password']
     salt = bcrypt.gensalt()
     hashed_password = bcrypt.hashpw(password.encode('utf-8'), salt)
     new_user = {
@@ -98,7 +96,7 @@ def registerUser():
     try:
         table.put_item(Item=new_user)
         message = 'User registered successfully'
-        return jsonify({'message': message, 'user': new_user}), 201
+        return redirect(url_for('login'))
     except ClientError as e:
         message = 'Error registering user'
         return jsonify({'error': message, 'details': str(e)}), 500
