@@ -1,4 +1,9 @@
 document.addEventListener('DOMContentLoaded', function() {
+    initializeLogoutButton();
+    fetchUsers();
+});
+
+function initializeLogoutButton() {
     const logoutButton = document.querySelector('#logoutButton');
 
     if (logoutButton) {
@@ -10,10 +15,7 @@ document.addEventListener('DOMContentLoaded', function() {
             window.location.href = '/login';
         });
     }
-});
-document.addEventListener("DOMContentLoaded", function() {
-    fetchUsers();
-});
+}
 
 function fetchUsers() {
     fetch('/users', {
@@ -48,9 +50,9 @@ function populateUserTable(users) {
             <td>${user.username}</td>
             <td>${user.email}</td>
             <td>${user.credit}</td>
-            <td>${user.is_admin ? 'Oui' : 'Non'}</td>
+            <td>${user.is_admin ? 'Yes' : 'No'}</td>
             <td><button class="btnEdit" onclick="editUser('${user.username}')">Modifier</button></td>
-            <td><button  class="btnEdit" onclick="deleteUser('${user.username}')">Supprimer</button></td>
+            <td><button class="btnEdit" onclick="deleteUser('${user.username}')">Supprimer</button></td>
         `;
         tableBody.appendChild(row);
     });
@@ -62,16 +64,20 @@ function filterUsers() {
     const table = document.getElementById('userTable');
     const rows = table.getElementsByTagName('tr');
 
-    for (let i = 0; i < rows.length; i++) {
-        const usernameColumn = rows[i].getElementsByTagName('td')[0];
-        if (usernameColumn) {
-            const usernameText = usernameColumn.textContent || usernameColumn.innerText;
-            if (usernameText.toUpperCase().indexOf(filter) > -1) {
-                rows[i].style.display = '';
-            } else {
-                rows[i].style.display = 'none';
+    for (let i = 1; i < rows.length; i++) { // Start from 1 to skip the table header
+        const cells = rows[i].getElementsByTagName('td');
+        let found = false;
+        for (let j = 0; j < cells.length; j++) {
+            const cell = cells[j];
+            if (cell) {
+                const cellText = cell.textContent || cell.innerText;
+                if (cellText.toUpperCase().indexOf(filter) > -1) {
+                    found = true;
+                    break;
+                }
             }
         }
+        rows[i].style.display = found ? '' : 'none';
     }
 }
 
