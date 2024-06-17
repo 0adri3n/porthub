@@ -1,5 +1,5 @@
 from boto3.dynamodb.conditions import Attr
-from flask import Flask, redirect, render_template, request, jsonify,make_response, url_for,flash
+from flask import Flask, redirect, render_template, request, jsonify,make_response, url_for,flash, session
 from dotenv import load_dotenv
 import os
 import boto3
@@ -18,7 +18,8 @@ from websockets import WebSocketServerProtocol
 from typing import Set
 from flask_jwt_extended import JWTManager, jwt_required, get_jwt_identity, create_access_token, get_jwt_identity,verify_jwt_in_request
 from functools import wraps
-
+import datetime
+import time
 
 
 load_dotenv()
@@ -57,35 +58,9 @@ try:
 except ClientError as e:
     print("Erreur lors de la connexion à DynamoDB :", e)
 
-# Créer la table user si elle n'existe pas
-# try:
-#     table = dynamodb.create_table(
-#         TableName='user',
-#         KeySchema=[
-#             {
-#                 'AttributeName': 'username',
-#                 'KeyType': 'HASH'  # Partition key
-#             }
-#         ],
-#         AttributeDefinitions=[
-#             {
-#                 'AttributeName': 'username',
-#                 'AttributeType': 'S'
-#             }
-#         ],
-#         ProvisionedThroughput={
-#             'ReadCapacityUnits': 5,
-#             'WriteCapacityUnits': 5
-#         }
-#     )
-#     # Attendre que la table soit créée
-#     table.meta.client.get_waiter('table_exists').wait(TableName='user')
-#     print("Table 'user' créée avec succès.")
-# except ClientError as e:
-#     print("Erreur lors de la création de la table 'user':", e)
 
 table = dynamodb.Table('user')
-
+table_config = dynamodb.Table('configs')
 
 app = Flask(__name__)
 jwt = JWTManager(app)
@@ -390,8 +365,8 @@ def register():
     return render_template("register.html")
 
 
-
 @app.route('/create_config', methods=["POST"])
+@jwt_required(optional=True,locations=["cookies"])
 def create_config():
     passwd = request.form["password"]
     users_count = request.form["users_count"]
@@ -415,9 +390,28 @@ def create_config():
     flash(f"JSON config (base64 encoded): {encoded_configuration}", "success")
 
     print("Configuration encodée:", encoded_configuration)
-    print("On sauvegarde la config dans AWS, comme ça on pourra la ré-afficher sur la page après refresh")
 
-    return redirect(url_for("panel"))
+    current_user = get_jwt_identity()
+    username = current_user["username"]
+    print(current_user)
+
+    ts = time.time()
+
+    hashed_password = bcrypt.hashpw(passwd.encode('utf-8'))
+    new_config = {
+        'username': username,
+        'passwd': hashed_password,
+        'port': port,
+        'users_count': users_count,
+        'creation_date': datetime.datetime.fromtimestamp(ts).strftime('%Y-%m-%d %H:%M:%S')
+    }
+    try:
+        table_config.put_item(Item=new_config)
+        message = 'Config added successfully'
+        return redirect(url_for('panel'))
+    except ClientError as e:
+        message = 'Error registering config'
+        return jsonify({'error': message, 'details': str(e)}), 500
 
 @app.route('/panel')
 @jwt_required(optional=True, locations=["cookies"])
@@ -445,6 +439,7 @@ def signal_handler(sig, frame):
         thread.join()
     print('Exiting...')
     sys.exit(0)
+
 
 if __name__ == '__main__':
     signal.signal(signal.SIGINT, signal_handler)
