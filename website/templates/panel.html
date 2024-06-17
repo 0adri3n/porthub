@@ -6,7 +6,7 @@
     <title>porthub - Chat Sécurisé</title>
     <link rel="stylesheet" href="../static/assets/style.css">
     <link rel="stylesheet" href="../static/assets/style_panel.css">
-    <script src="../static/scripts/webscript.js"></script>
+    <script src="../static/scripts/webscript_config.js"></script>
 </head>
 <body>
     <header>
@@ -54,7 +54,37 @@
                 </div>
             </form>
         </div>
+
+        <!-- Tableau pour afficher les utilisateurs -->
+        <table id="configTable">
+            <thead>
+                <tr>
+                    <th>Username</th>
+                    <th>Creation date</th>
+                    <th>Password</th>
+                    <th>Port</th>
+                    <th>Users count</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Boucle pour afficher chaque utilisateur -->
+                {% for user in users %}
+                <tr>
+                    <td>{{ user.username }}</td>
+                    <td>{{ user.email }}</td>
+                    <td>{{ user.credit }}</td>
+                    <td>{{ user.is_admin }}</td>
+                    <td><button class="btnEdit">Modifier</button></td>
+                    <td><button class="btnEdit">Supprimer</button></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+
     </main>
+
+
     
     <footer>
         <div class="container">

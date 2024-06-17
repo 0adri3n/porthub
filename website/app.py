@@ -58,6 +58,39 @@ try:
 except ClientError as e:
     print("Erreur lors de la connexion à DynamoDB :", e)
 
+# try:
+#     table = dynamodb.create_table(
+#         TableName='configs',
+#         KeySchema=[
+#             {
+#                 'AttributeName': 'username',
+#                 'KeyType': 'HASH'  # Partition key
+#             },
+#             {
+#                 'AttributeName': 'port',
+#                 'KeyType': 'RANGE'
+#             }
+#         ],
+#         AttributeDefinitions=[
+#             {
+#                 'AttributeName': 'username',
+#                 'AttributeType': 'S'
+#             },
+#             {
+#                 'AttributeName': 'port',
+#                 'AttributeType': 'N'
+#             }
+#         ],
+#         ProvisionedThroughput={
+#             'ReadCapacityUnits': 5,
+#             'WriteCapacityUnits': 5
+#         }
+#     )
+#     # Attendre que la table soit créée
+#     table.meta.client.get_waiter('table_exists').wait(TableName='configs')
+#     print("Table 'configs' créée avec succès.")
+# except ClientError as e:
+#     print("Erreur lors de la création de la table 'user':", e)
 
 table = dynamodb.Table('user')
 table_config = dynamodb.Table('configs')
@@ -66,40 +99,68 @@ app = Flask(__name__)
 jwt = JWTManager(app)
 app.secret_key = "porthub"
 
+class WebSocketThread(threading.Thread):
+    def __init__(self, configuration, stop_event):
+        super().__init__()
+        self.configuration = configuration
+        self.port = configuration["port"]
+        self.stop_event = stop_event
+        self.server = None
 
+    def run(self):
+        port = self.configuration["port"]
+        asyncio.run(self.start_server(port))
 
-connected_clients: Set[WebSocketServerProtocol] = set()
+    async def start_server(self, port):
+        try:
+            async with websockets.serve(self.register_client, "localhost", port):
+                await self.stop_event.wait()
+        except Exception as e:
+            print(f"WebSocket server on port {port} encountered an error:", e)
+
+    async def register_client(self, websocket: websockets.WebSocketServerProtocol):
+        global connected_clients
+        connected_clients.add(websocket)
+        try:
+            async for message in websocket:
+                await self.broadcast(message)
+        finally:
+            connected_clients.remove(websocket)
+
+    async def broadcast(self, message: str):
+        if connected_clients:
+            await asyncio.wait([client.send(message) for client in connected_clients])
+
+    def stop_server(self):
+        if self.server:
+            self.server.close()
+            asyncio.new_event_loop().run_until_complete(asyncio.sleep(1))
+            self.stop_event.set()
+
+connected_clients: Set[websockets.WebSocketServerProtocol] = set()
 websocket_threads = []
 
-async def register_client(websocket: WebSocketServerProtocol):
-    connected_clients.add(websocket)
-    try:
-        async for message in websocket:
-            await broadcast(message)
-    finally:
-        connected_clients.remove(websocket)
-
-async def broadcast(message: str):
-    print(message)
-    if connected_clients:
-        await asyncio.wait([client.send(message) for client in connected_clients])
-
-async def websocket_server(port):
-    async with websockets.serve(register_client, "localhost", port):
-        await asyncio.Future()
-
 def start_websocket(configuration):
-    port = configuration["port"]
-    loop = asyncio.new_event_loop()
-    asyncio.set_event_loop(loop)
-    loop.create_task(websocket_server(port))
-    loop.run_forever()
+    stop_event = threading.Event()
+    thread = WebSocketThread(configuration, stop_event)
+    thread.start()
+    websocket_threads.append(thread)
 
 def stop_websocket(port):
+    global websocket_threads
+
+    # Find the WebSocket thread corresponding to the specified port
+    threads_to_remove = []
     for thread in websocket_threads:
-        if thread.name == f"WebSocket Thread - {port}":
+        if int(thread.configuration["port"]) == int(port):
+            print("Stopping WebSocket server on port:", port)
             thread.stop_event.set()
-            thread.join()
+            threads_to_remove.append(thread)
+
+    # Remove the thread from the list
+    for thread in threads_to_remove:
+        websocket_threads.remove(thread)
+
 
 
 def admin_required(fn):
@@ -283,7 +344,6 @@ def authenticate(username, password):
 def logindb():
     username = request.form["username"]
     password = request.form["password"]
-    print(username, password)
 
     user = authenticate(username, password)
     if user:
@@ -302,6 +362,8 @@ def logindb():
         response = make_response(redirect(url_for('redirection')))
     
         response.set_cookie('access_token_cookie', token)
+
+        session["username"] = username
         
         # Ajouter le token aux cookies de la réponse (ou stocker ailleurs selon vos besoins)
         return response
@@ -349,6 +411,21 @@ def getEmail(email):
         return jsonify({'error': 'Error checking email', 'details': str(e)}), 500
 
 
+@app.route('/configs')
+@jwt_required()
+def listConfigs():
+    try:
+        current_user = get_jwt_identity()
+        username = current_user['username']
+        
+        # Filter configurations by username
+        response = table_config.scan(FilterExpression=Attr('username').eq(username))
+        configs = response.get('Items', [])
+        
+        return jsonify({'configs': configs}), 200
+    except ClientError as e:
+        return jsonify({'error': 'Error getting configurations', 'details': str(e)}), 500
+
 
 @app.route('/login')
 @jwt_required(optional=True,locations="cookies")
@@ -366,7 +443,6 @@ def register():
 
 
 @app.route('/create_config', methods=["POST"])
-@jwt_required(optional=True,locations=["cookies"])
 def create_config():
     passwd = request.form["password"]
     users_count = request.form["users_count"]
@@ -378,11 +454,8 @@ def create_config():
         "password": passwd,
         "users_count": users_count
     }
-    print(port)
     # Démarrer le serveur WebSocket dans un thread séparé
-    thread = threading.Thread(target=start_websocket, args=(configuration,), daemon=True)
-    thread.start()
-    websocket_threads.append(thread)
+    start_websocket(configuration)
 
     json_configuration = json.dumps(configuration, separators=(',', ':')).encode('utf-8')
     encoded_configuration = base64.b64encode(json_configuration).decode("utf-8")
@@ -391,16 +464,13 @@ def create_config():
 
     print("Configuration encodée:", encoded_configuration)
 
-    current_user = get_jwt_identity()
-    username = current_user["username"]
-    print(current_user)
+    username = session["username"]
 
     ts = time.time()
 
-    hashed_password = bcrypt.hashpw(passwd.encode('utf-8'))
     new_config = {
         'username': username,
-        'passwd': hashed_password,
+        'passwd': passwd,
         'port': port,
         'users_count': users_count,
         'creation_date': datetime.datetime.fromtimestamp(ts).strftime('%Y-%m-%d %H:%M:%S')
@@ -413,6 +483,36 @@ def create_config():
         message = 'Error registering config'
         return jsonify({'error': message, 'details': str(e)}), 500
 
+@app.route('/config/<string:port>', methods=["DELETE"])
+def deleteConfig(port):
+    current_user = session["username"]
+    if not current_user:
+        return redirect(url_for('login'))
+
+    try:
+        # Vérifiez si la configuration existe pour l'utilisateur donné et le port spécifié
+        print(current_user, port)
+        response = table_config.scan(
+            FilterExpression=Attr('username').eq(current_user) & Attr('port').eq(int(port))
+        )
+        items = response.get('Items', [])
+        if not items:
+            return jsonify({'message': 'Config not found'}), 404
+
+        # Supprimer la configuration
+        table_config.delete_item(
+            Key={
+                'username': current_user,
+                'port': int(port)
+            }
+        )
+        stop_websocket(port)
+        return jsonify({'message': 'Config deleted successfully'}), 200
+
+    except ClientError as e:
+        return jsonify({'error': 'Error deleting config', 'details': str(e)}), 500
+
+
 @app.route('/panel')
 @jwt_required(optional=True, locations=["cookies"])
 def panel():
@@ -421,11 +521,6 @@ def panel():
         return redirect(url_for('login'))  # Redirect to the login page if JWT token is not present
     return render_template('panel.html', user=current_user)
 
-@app.route('/stop_websocket/<int:port>', methods=["POST"])
-def stop_websocket_route(port):
-    stop_websocket(port)
-    flash(f"WebSocket on port {port} stopped.", "success")
-    return redirect(url_for("panel"))
 
 def find_free_port():
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
@@ -435,8 +530,8 @@ def find_free_port():
 def signal_handler(sig, frame):
     print('Stopping WebSocket threads...')
     for thread in websocket_threads:
-        thread.stop_event.set()
-        thread.join()
+        thread[0].stop_event.set()
+        thread[0].join()
     print('Exiting...')
     sys.exit(0)
 
