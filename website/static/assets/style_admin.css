@@ -140,3 +140,108 @@ h1 {
     color: #ffa31a; 
     background-color: #ffffff;
 }
+
+.modal {
+    display: none; 
+    position: fixed; 
+    z-index: 1; 
+    left: 0;
+    top: 0;
+    width: 100%; 
+    height: 100%; 
+    overflow: auto; 
+    background-color: rgb(0,0,0); 
+    background-color: rgba(0,0,0,0.4); 
+    padding-top: 60px; 
+}
+
+.modal-content {
+    background-color: #333;
+    margin: 5% auto; 
+    padding: 20px;
+    border: 1px solid #888;
+    width: 80%; 
+    max-width: 500px;
+    border-radius: 5px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.close {
+    color: #fff;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+}
+
+input:disabled {
+    background-color: #f0f0f0; /* Couleur de fond pour les champs désactivés */
+    color: #a0a0a0;           /* Couleur du texte pour les champs désactivés */
+    border: 1px solid #ccc;   /* Bordure pour les champs désactivés */
+    cursor: not-allowed;      /* Curseur indiquant que le champ est désactivé */
+}
+
+.close:hover,
+.close:focus {
+    color: black;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+form label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+
+form input[type="text"],
+form input[type="email"],
+form input[type="number"] {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 1rem;
+}
+
+form input[type="checkbox"] {
+    margin-right: 10px;
+}
+
+form button[type="submit"] {
+    background-color: #ffa31a;
+    color: #fff;
+    border: none;
+    padding: 10px 20px;
+    cursor: pointer;
+    border-radius: 4px;
+    font-size: 1rem;
+}
+
+form button[type="submit"]:hover {
+    background-color: #e59400;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .nav {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        margin-left: 0;
+    }
+    
+    .nav a {
+        margin-right: 0;
+        margin-bottom: 10px;
+    }
+    
+    .connexion {
+        text-align: center;
+        margin-left: 0;
+    }
+
+    main {
+        width: 90%;
+    }
+}

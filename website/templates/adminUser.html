@@ -54,11 +54,27 @@
                     <td>{{ user.credit }}</td>
                     <td>{{ user.is_admin }}</td>
                     <td><button class="btnEdit">Modifier</button></td>
-                    <td><button class="btnEdit">Supprimer</button></td>
+                    <td><button class="btnEdit" onclick="deleteUser('{{ user.username }}')">Supprimer</button></td>
                 </tr>
                 {% endfor %}
             </tbody>
         </table>
+
+        <div id="editUserModal" class="modal">
+            <div class="modal-content">
+                <span class="close">&times;</span>
+                <h2>Modifier l'utilisateur</h2>
+                <form id="editUserForm">
+                    <label for="editUsername">Nom d'utilisateur:</label>
+                    <input type="text" id="editUsername" name="username" readonly>
+                    <label for="editEmail">Email:</label>
+                    <input type="email" id="editEmail" name="email" required>
+                    <label for="editCredit">Crédit:</label>
+                    <input type="number" id="editCredit" name="credit" required>
+                    <button type="submit" class="btn">Enregistrer</button>
+                </form>
+            </div>
+        </div>
     </main>
     <footer>
         <div class="container">

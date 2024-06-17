@@ -16,10 +16,10 @@ import signal
 import sys
 from websockets import WebSocketServerProtocol
 from typing import Set
-from flask_jwt_extended import JWTManager, jwt_required, get_jwt_identity, create_access_token, get_jwt_identity,verify_jwt_in_request
-from functools import wraps
+from flask_jwt_extended import JWTManager, jwt_required, get_jwt_identity, create_access_token, create_access_token
 import datetime
 import time
+from datetime import timedelta
 
 
 load_dotenv()
@@ -32,6 +32,8 @@ app.config["JWT_COOKIE_SECURE"] = True  # Mettre à True en production avec HTTP
 app.config["JWT_ACCESS_COOKIE_PATH"] = "/"
 app.config["JWT_REFRESH_COOKIE_PATH"] = "/refresh"
 app.config["JWT_COOKIE_CSRF_PROTECT"] = True  # Mettre à True en production
+app.config["JWT_ACCESS_TOKEN_EXPIRES"] = timedelta(days=10)  # Durée de validité de l'access token
+app.config["JWT_REFRESH_TOKEN_EXPIRES"] = timedelta(days=365)
 
 
 # Récupérer les clés d'accès depuis les variables d'environnement
@@ -99,6 +101,7 @@ app = Flask(__name__)
 jwt = JWTManager(app)
 app.secret_key = "porthub"
 
+
 class WebSocketThread(threading.Thread):
     def __init__(self, configuration, stop_event):
         super().__init__()
@@ -140,6 +143,8 @@ class WebSocketThread(threading.Thread):
 connected_clients: Set[websockets.WebSocketServerProtocol] = set()
 websocket_threads = []
 
+
+
 def start_websocket(configuration):
     stop_event = threading.Event()
     thread = WebSocketThread(configuration, stop_event)
@@ -165,6 +170,13 @@ def stop_websocket(port):
 @app.route('/')
 def home():
     return render_template('index.html')
+
+@app.route('/refresh', methods=['POST'])
+@jwt_required(locations=["cookies"],refresh=True)  # Assurez-vous que cela correspond à votre configuration
+def refresh():
+    current_user = get_jwt_identity()
+    access_token = create_access_token(identity=current_user)
+    return jsonify(access_token=access_token), 200
 
 @app.route('/registerdb', methods=["POST"])
 def registerUser():
@@ -210,7 +222,14 @@ def updateUser(username):
     data = request.get_json()
 
     # Vérifier les champs autorisés
-    allowed_fields = {'email', 'password'}
+    allowed_fields = {'email', 'credit'}
+
+    # Vérifier si l'email est déjà utilisé par un autre utilisateur
+    if 'email' in data:
+        response = table.scan(FilterExpression=Attr('email').eq(data['email']))
+        existing_user_email = response.get('Items')
+        if existing_user_email and existing_user_email[0]['username'] != username:
+            return jsonify({'error': 'Email already exists'}), 400
 
     # Vérifier si des champs non autorisés sont présents dans la requête
     for field in data.keys():
@@ -221,8 +240,6 @@ def updateUser(username):
     update_expression = 'SET '
     expression_attribute_values = {}
 
-    # Vérifier si le mot de passe doit être mis à jour
-    # Vérifier si le mot de passe doit être mis à jour
     if 'password' in data:
         salt = bcrypt.gensalt()
         hashed_password = bcrypt.hashpw(data['password'].encode('utf-8'), salt)
@@ -231,17 +248,14 @@ def updateUser(username):
         update_expression += 'salt = :salt, '
         expression_attribute_values[':salt'] = salt.decode('utf-8')
 
-
-    # Vérifier si l'email doit être mis à jour
     if 'email' in data:
         update_expression += 'email = :email, '
         expression_attribute_values[':email'] = data['email']
 
-    # Supprimer le sel s'il n'est pas nécessaire
-    if 'password' not in data:
-        expression_attribute_values.pop(':salt', None)
+    if 'credit' in data:
+        update_expression += 'credit = :credit, '
+        expression_attribute_values[':credit'] = int(data['credit'])
 
-    # Vérifier si des champs ont été spécifiés pour la mise à jour
     if not update_expression.endswith('SET '):
         update_expression = update_expression[:-2]  # Supprimer la virgule et l'espace à la fin
 
@@ -260,7 +274,7 @@ def updateUser(username):
         except ClientError as e:
             return jsonify({'error': 'Error updating user', 'details': str(e)}), 500
     else:
-        return jsonify({'error': 'No fields to update provided'}), 400
+        return jsonify({'message': 'No valid fields to update'}), 400
 
 @app.route('/users', methods=["GET"])
 @jwt_required()
@@ -299,22 +313,25 @@ def getUserByPseudo(username):
         return jsonify({'error': 'Error getting user', 'details': str(e)}), 500
 
 @app.route('/user/<string:username>', methods=["DELETE"])
-@jwt_required(optional=True, locations=["cookies"])
+@jwt_required()
 def deleteUser(username):
     current_user = get_jwt_identity()
-    if not current_user:
-        return redirect(url_for('login'))
-    if current_user['is_admin']==True :
-        try:
-            response = table.delete_item(Key={'username': username}, ReturnValues='ALL_OLD')
-            deleted_user = response.get('Attributes')
-            if deleted_user:
-                return jsonify({'message': 'User deleted successfully', 'user': deleted_user}), 200
-            else:
-                return jsonify({'message': 'User not found'}), 404
-        except ClientError as e:
-            return jsonify({'error': 'Error deleting user', 'details': str(e)}), 500
+    
+    # Vérifier si l'utilisateur actuel est un administrateur
+    if not current_user or not current_user['is_admin']:
+        return jsonify({'error': 'Unauthorized'}), 401
 
+    try:
+        # Supprimer l'utilisateur de la base de données
+        response = table.delete_item(Key={'username': username}, ReturnValues='ALL_OLD')
+        deleted_user = response.get('Attributes')
+
+        if deleted_user:
+            return jsonify({'message': 'User deleted successfully', 'user': deleted_user}), 200
+        else:
+            return jsonify({'message': 'User not found'}), 404
+    except ClientError as e:
+        return jsonify({'error': 'Error deleting user', 'details': str(e)}), 500
 
 def authenticate(username, password):
     # Récupérer l'utilisateur depuis la base de données en fonction du nom d'utilisateur
