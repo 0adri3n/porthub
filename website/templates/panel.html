@@ -6,7 +6,7 @@
     <title>porthub - Chat Sécurisé</title>
     <link rel="stylesheet" href="../static/assets/style.css">
     <link rel="stylesheet" href="../static/assets/style_panel.css">
-    <script src="../static/scripts/webscript.js"></script>
+    <script src="../static/scripts/webscript_config.js"></script>
 </head>
 <body>
     <header>
@@ -40,18 +40,51 @@
             <form action="/create_config" method="POST">
                 <div>
                     <label for="password">Mot de passe:</label>
-                    <input type="password" id="password" name="password" required>
+                    <input type="password" id="password" name="password" 
+                           pattern="^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{5,}$" 
+                           title="At least 5 characters and one number." 
+                           required>
                 </div>
                 <div>
                     <label for="users_count">Nombre d'utilisateurs:</label>
-                    <input type="number" id="users_count" name="users_count" required>
+                    <input type="number" id="users_count" name="users_count" min="2" required>
                 </div>
                 <div>
                     <button type="submit">Créer</button>
                 </div>
             </form>
         </div>
+
+        <!-- Tableau pour afficher les utilisateurs -->
+        <table id="configTable">
+            <thead>
+                <tr>
+                    <th>Username</th>
+                    <th>Creation date</th>
+                    <th>Password</th>
+                    <th>Port</th>
+                    <th>Users count</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Boucle pour afficher chaque utilisateur -->
+                {% for user in users %}
+                <tr>
+                    <td>{{ user.username }}</td>
+                    <td>{{ user.email }}</td>
+                    <td>{{ user.credit }}</td>
+                    <td>{{ user.is_admin }}</td>
+                    <td><button class="btnEdit">Modifier</button></td>
+                    <td><button class="btnEdit">Supprimer</button></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+
     </main>
+
+
     
     <footer>
         <div class="container">
