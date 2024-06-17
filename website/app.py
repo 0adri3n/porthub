@@ -162,9 +162,6 @@ def stop_websocket(port):
         websocket_threads.remove(thread)
 
 
-
-
-
 @app.route('/')
 def home():
     return render_template('index.html')
