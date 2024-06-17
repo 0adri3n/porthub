@@ -127,15 +127,7 @@ def stop_websocket(port):
             thread.join()
 
 
-def admin_required(fn):
-    @wraps(fn)
-    def wrapper(*args, **kwargs):
-        verify_jwt_in_request()
-        identity = get_jwt_identity()
-        if not identity.get('is_admin'):
-            return jsonify({'message': 'Admin access required'}), 403
-        return fn(*args, **kwargs)
-    return wrapper
+
 
 @app.route('/')
 def home():
@@ -181,7 +173,6 @@ def registerUser():
 
 @app.route('/user/<string:username>', methods=["PUT"])
 @jwt_required()
-@admin_required
 def updateUser(username):
     data = request.get_json()
 
@@ -240,7 +231,6 @@ def updateUser(username):
 
 @app.route('/users', methods=["GET"])
 @jwt_required()
-@admin_required
 def listUsers():
     users = get_all_users()
     return jsonify({'users': users})
@@ -323,7 +313,6 @@ def logindb():
        
         token = create_access_token(identity=token_data)
 
-        
         response = make_response(redirect(url_for('redirection')))
     
         response.set_cookie('access_token_cookie', token)
