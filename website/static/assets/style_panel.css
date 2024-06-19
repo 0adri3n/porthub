@@ -40,6 +40,8 @@ button:hover {
     background-color: #ffffff;
     color: #ffa31a; /* Orange */
 }
+<<<<<<< HEAD
+=======
 
 #configTable {
     width: 100%;
@@ -68,3 +70,4 @@ button:hover {
 #configTable tbody tr:hover {
     background-color: #2a2a2a;
 }
+>>>>>>> e70682d87b0b458f0fc28a00200ddd4499613004

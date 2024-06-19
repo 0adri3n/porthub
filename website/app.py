@@ -25,8 +25,8 @@ import time
 load_dotenv()
 
 app = Flask(__name__)
-app.config["SECRET_KEY"] = os.getenv('SECRET_KEY')
-app.config["JWT_SECRET_KEY"] = os.getenv('JWT_SECRET_KEY')
+app.config["SECRET_KEY"] = "RomainLeoAdrienAmnaNathan"
+app.config["JWT_SECRET_KEY"] ="NathanLeoAdrienRomainAmna"
 app.config["JWT_TOKEN_LOCATION"] = ["cookies"]
 app.config["JWT_COOKIE_SECURE"] = True  # Mettre à True en production avec HTTPS
 app.config["JWT_ACCESS_COOKIE_PATH"] = "/"
@@ -35,8 +35,8 @@ app.config["JWT_COOKIE_CSRF_PROTECT"] = True  # Mettre à True en production
 
 
 # Récupérer les clés d'accès depuis les variables d'environnement
-aws_access_key_id = os.getenv('AWS_ACCESS_KEY_ID')
-aws_secret_access_key = os.getenv('AWS_SECRET_ACCESS_KEY')
+aws_access_key_id = "AKIAZQ3DT3D4D4FHKNV4"
+aws_secret_access_key = "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"
 aws_region = os.getenv('AWS_REGION', 'eu-west-3')  # Assurez-vous de définir votre région AWS dans le fichier .env
 
 
@@ -113,7 +113,9 @@ class WebSocketThread(threading.Thread):
 
     async def start_server(self, port):
         try:
+            print(f"Starting WebSocket server on port {port}")
             async with websockets.serve(self.register_client, "localhost", port):
+                print(f"WebSocket server running on port {port}")
                 await self.stop_event.wait()
         except Exception as e:
             print(f"WebSocket server on port {port} encountered an error:", e)
@@ -538,6 +540,6 @@ def signal_handler(sig, frame):
 
 if __name__ == '__main__':
     signal.signal(signal.SIGINT, signal_handler)
-    app.run(debug=True)
+    app.run(debug=True,host='0.0.0.0')
 
     
