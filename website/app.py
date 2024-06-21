@@ -16,8 +16,7 @@ import signal
 import sys
 from websockets import WebSocketServerProtocol
 from typing import Set
-from flask_jwt_extended import JWTManager, jwt_required, get_jwt_identity, create_access_token, get_jwt_identity,verify_jwt_in_request
-from functools import wraps
+from flask_jwt_extended import JWTManager, jwt_required, get_jwt_identity, create_access_token, get_jwt_identity
 import datetime
 import time
 
