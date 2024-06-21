@@ -178,7 +178,7 @@ def refresh():
     access_token = create_access_token(identity=current_user)
     return jsonify(access_token=access_token), 200
 
-@app.route('/token/<string:token>', methods=['POST'])
+@app.route('/token/<string:token>', methods=['GET'])
 def getToken(token):
     try:
         # Recherche dans la table `configs` pour voir si le token existe
