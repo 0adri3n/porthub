@@ -178,6 +178,22 @@ def refresh():
     access_token = create_access_token(identity=current_user)
     return jsonify(access_token=access_token), 200
 
+@app.route('/token/<string:token>', methods=['POST'])
+def getToken(token):
+    try:
+        # Recherche dans la table `configs` pour voir si le token existe
+        response = table_config.scan(FilterExpression=Attr('config_encoded').eq(token))
+        items = response.get('Items', [])
+        
+        if items:
+            return jsonify({'exists': True}), 200
+        else:
+            return jsonify({'exists': False}), 404
+    except ClientError as e:
+        return jsonify({'error': 'Error checking token', 'details': str(e)}), 500
+
+
+
 @app.route('/registerdb', methods=["POST"])
 def registerUser():
     username = request.form['username']
@@ -476,7 +492,8 @@ def create_config():
         'passwd': passwd,
         'port': port,
         'users_count': users_count,
-        'creation_date': datetime.datetime.fromtimestamp(ts).strftime('%Y-%m-%d %H:%M:%S')
+        'creation_date': datetime.datetime.fromtimestamp(ts).strftime('%Y-%m-%d %H:%M:%S'),
+        'config_encoded' : encoded_configuration
     }
     try:
         table_config.put_item(Item=new_config)
