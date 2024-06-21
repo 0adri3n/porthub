@@ -30,7 +30,7 @@
     <main>
         <h1>Admin Panel</h1>
 
-        <!-- Champ de recherche -->
+        <!-- Champ de recherche pour les utilisateurs -->
         <input type="text" id="searchInput" oninput="filterUsers()" placeholder="Rechercher par nom d'utilisateur">
 
         <!-- Tableau pour afficher les utilisateurs -->
@@ -57,6 +57,23 @@
                     <td><button class="btnEdit" onclick="deleteUser('{{ user.username }}')">Supprimer</button></td>
                 </tr>
                 {% endfor %}
+            </tbody>
+        </table>
+
+        <!-- Tableau pour afficher les configurations -->
+        <table id="configTable">
+            <thead>
+                <tr>
+                    <th>Nom de la configuration</th>
+                    <th>Port</th>
+                    <th>Nombre d'utilisateurs</th>
+                    <th>Date de création</th>
+                    <th>Action</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Data will be dynamically populated here -->
             </tbody>
         </table>
 

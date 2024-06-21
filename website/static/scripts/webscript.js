@@ -187,3 +187,49 @@ function getCookie(name) {
     const parts = value.split(`; ${name}=`);
     if (parts.length === 2) return parts.pop().split(';').shift();
 }
+
+document.addEventListener('DOMContentLoaded', function() {
+    initializeLogoutButton();
+    fetchConfigs();
+});
+
+function fetchConfigs() {
+    fetch('/configs', {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${getCookie('access_token_cookie')}`
+        }
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        return response.json();
+    })
+    .then(data => {
+        console.log(data); // Optional: Log data to console for debugging
+        populateConfigTable(data.configs);
+    })
+    .catch(error => {
+        console.error('Error:', error);
+    });
+}
+
+function populateConfigTable(configs) {
+    const tableBody = document.querySelector('#configTable tbody');
+    tableBody.innerHTML = '';
+
+    configs.forEach(config => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td>${config.username}</td>
+            <td>${config.port}</td>
+            <td>${config.users_count}</td>
+            <td>${config.creation_date}</td>
+            <td><button class="btnEdit" onclick="editConfig('${config.port}')">Modifier</button></td>
+            <td><button class="btnEdit" onclick="editConfig('${config.port}')">Supprimer</button></td>
+        `;
+        tableBody.appendChild(row);
+    });
+}

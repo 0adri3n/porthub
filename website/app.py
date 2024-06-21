@@ -461,6 +461,7 @@ def register():
     return render_template("register.html")
 
 
+
 @app.route('/create_config', methods=["POST"])
 def create_config():
     passwd = request.form["password"]

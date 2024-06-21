@@ -222,6 +222,54 @@ form button[type="submit"]:hover {
     background-color: #e59400;
 }
 
+/* Styles pour le tableau des configurations */
+#configTable {
+    width: 100%;
+    border-collapse: collapse;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    background-color: #333;
+    margin-top: 20px; /* Ajoute un espace entre les deux tableaux */
+}
+
+#configTable th,
+#configTable td {
+    padding: 12px 15px;
+    text-align: left;
+    border-bottom: 1px solid #333;
+    color: #fff; /* Couleur du texte */
+}
+
+#configTable th {
+    background-color: #ffa31a; /* Couleur de fond pour les en-têtes */
+}
+
+#configTable tbody tr:nth-child(even) {
+    background-color: #1a1a1a; /* Couleur de fond pour les lignes paires */
+}
+
+#configTable tbody tr:hover {
+    background-color: #2a2a2a; /* Couleur de fond au survol */
+}
+
+/* Bouton Modifier pour les configurations */
+#configTable .btnEdit {
+    color: #ffffff; /* Texte blanc */
+    background-color: transparent;
+    border: 1px solid #ffffff;
+    padding: 5px 10px;
+    border-radius: 5px;
+    text-decoration: none;
+    transition: background-color 0.3s, color 0.3s;
+    font-size: 1.2em;
+}
+
+#configTable .btnEdit:hover {
+    color: #ffa31a; /* Texte orange au survol */
+    background-color: #ffffff; /* Fond blanc au survol */
+}
+
+
 /* Responsive adjustments */
 @media (max-width: 768px) {
     .nav {
@@ -245,3 +293,4 @@ form button[type="submit"]:hover {
         width: 90%;
     }
 }
+
