@@ -114,14 +114,15 @@ class WebSocketThread(threading.Thread):
     async def start_server(self, port):
         try:
             print(f"Starting WebSocket server on port {port}")
-            async with websockets.serve(self.register_client, "localhost", port):
-                print(f"WebSocket server running on port {port}")
-                await self.stop_event.wait()
+            self.server = await websockets.serve(self.register_client, "0.0.0.0", port)
+            print(f"WebSocket server running on port {port}")
+            await self.stop_event.wait()
         except Exception as e:
             print(f"WebSocket server on port {port} encountered an error:", e)
 
     async def register_client(self, websocket: WebSocketServerProtocol):
         self.connected_clients.add(websocket)
+        print("Client registered")
         try:
             async for message in websocket:
                 await self.broadcast(message)
@@ -142,25 +143,25 @@ connected_clients: Set[WebSocketServerProtocol] = set()
 websocket_threads = []
 
 def start_websocket(configuration):
-    stop_event = threading.Event()
+    stop_event = asyncio.Event()
     thread = WebSocketThread(configuration, stop_event)
     thread.start()
-    websocket_threads.append(thread)
+    websocket_threads.append((thread, stop_event))
 
 def stop_websocket(port):
     global websocket_threads
 
     # Find the WebSocket thread corresponding to the specified port
     threads_to_remove = []
-    for thread in websocket_threads:
+    for thread, stop_event in websocket_threads:
         if int(thread.configuration["port"]) == int(port):
             print("Stopping WebSocket server on port:", port)
-            thread.stop_event.set()
-            threads_to_remove.append(thread)
+            stop_event.set()
+            threads_to_remove.append((thread, stop_event))
 
     # Remove the thread from the list
-    for thread in threads_to_remove:
-        websocket_threads.remove(thread)
+    for thread, stop_event in threads_to_remove:
+        websocket_threads.remove((thread, stop_event))
 
 
 
