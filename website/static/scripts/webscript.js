@@ -1,6 +1,7 @@
 document.addEventListener('DOMContentLoaded', function() {
     initializeLogoutButton();
     fetchUsers();
+    initializeEditUserModal();
 });
 
 function initializeLogoutButton() {
@@ -9,9 +10,7 @@ function initializeLogoutButton() {
     if (logoutButton) {
         logoutButton.addEventListener('click', function(event) {
             event.preventDefault();
-            // Supprimer le cookie en utilisant JavaScript
             document.cookie = "access_token_cookie=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-            // Rediriger vers la page de connexion
             window.location.href = '/login';
         });
     }
@@ -64,7 +63,7 @@ function filterUsers() {
     const table = document.getElementById('userTable');
     const rows = table.getElementsByTagName('tr');
 
-    for (let i = 1; i < rows.length; i++) { // Start from 1 to skip the table header
+    for (let i = 1; i < rows.length; i++) {
         const cells = rows[i].getElementsByTagName('td');
         let found = false;
         for (let j = 0; j < cells.length; j++) {
@@ -82,9 +81,31 @@ function filterUsers() {
 }
 
 function editUser(username) {
-    // Redirection vers la page de modification de l'utilisateur spécifié
-    window.location.href = `/user/${username}`;
+    fetch(`/user/${username}`, {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${getCookie('access_token_cookie')}`
+        }
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        return response.json();
+    })
+    .then(data => {
+        const user = data.user;
+        document.getElementById('editUsername').value = user.username;
+        document.getElementById('editEmail').value = user.email;
+        document.getElementById('editCredit').value = user.credit;
+        document.getElementById('editUserModal').style.display = 'block';
+    })
+    .catch(error => {
+        console.error('Error:', error);
+    });
 }
+
 
 function deleteUser(username) {
     fetch(`/user/${username}`, {
@@ -101,76 +122,64 @@ function deleteUser(username) {
         return response.json();
     })
     .then(data => {
-        alert(data.message); // Afficher un message de succès ou d'erreur
-        fetchUsers(); // Actualiser la liste des utilisateurs après suppression
+        alert(data.message);
+        fetchUsers();
     })
     .catch(error => {
         console.error('Error:', error);
     });
 }
 
-function fetchConfigs() {
-    fetch('/configs', {
-        method: 'GET',
-        headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${getCookie('access_token_cookie')}`
-        }
-    })
-    .then(response => {
-        if (!response.ok) {
-            throw new Error('Network response was not ok');
-        }
-        return response.json();
-    })
-    .then(data => {
-        console.log(data);
-        populateConfigTable(data.configs);
-    })
-    .catch(error => {
-        console.error('Error:', error);
-    });
-}
+function initializeEditUserModal() {
+    const modal = document.getElementById('editUserModal');
+    const span = document.getElementsByClassName('close')[0];
+    const form = document.getElementById('editUserForm');
 
-function populateConfigTable(configs) {
-    const tableBody = document.querySelector('#configTable tbody');
-    tableBody.innerHTML = '';
+    span.onclick = function() {
+        modal.style.display = 'none';
+    }
 
-    configs.forEach(config => {
-        const row = document.createElement('tr');
-        row.innerHTML = `
-            <td>${config.username}</td>
-            <td>${config.creation_date}</td>
-            <td>${config.passwd}</td>
-            <td>${config.port}</td>
-            <td>${config.users_count}</td>
-            <td><button  class="btnEdit" onclick="deleteConfig('${config.port}')">Supprimer</button></td>
-        `;
-        tableBody.appendChild(row);
-    });
-}
+    window.onclick = function(event) {
+        if (event.target == modal) {
+            modal.style.display = 'none';
+        }
+    }
 
-function deleteConfig(port) {
-    fetch(`/config/${port}`, {
-        method: 'DELETE',
-        headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${getCookie('access_token_cookie')}`
-        }
-    })
-    .then(response => {
-        if (!response.ok) {
-            throw new Error('Network response was not ok');
-        }
-        return response.json();
-    })
-    .then(data => {
-        alert(data.message); // Afficher un message de succès ou d'erreur
-        fetchUsers(); // Actualiser la liste des utilisateurs après suppression
-    })
-    .catch(error => {
-        console.error('Error:', error);
-    });
+    form.onsubmit = function(event) {
+        event.preventDefault();
+
+        const username = document.getElementById('editUsername').value;
+        const email = document.getElementById('editEmail').value;
+        const credit = document.getElementById('editCredit').value;
+
+        const data = {
+            email: email,
+            credit: credit
+        };
+
+        fetch(`/user/${username}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${getCookie('access_token_cookie')}`
+            },
+            body: JSON.stringify(data)
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        })
+        .then(data => {
+            alert(data.message);
+            modal.style.display = 'none';
+            fetchUsers();
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
+    }
 }
 
 function getCookie(name) {
