@@ -67,7 +67,7 @@ h1 {
     text-align: center;
 }
 
-#searchInput {
+.searchInput {
     width: 100%;
     padding: 10px;
     margin-bottom: 20px;
@@ -294,3 +294,42 @@ form button[type="submit"]:hover {
     }
 }
 
+/* Boutons de basculement */
+.toggle-buttons {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 20px;
+}
+
+.toggle-buttons button {
+    background-color: #ffa31a;
+    color: #fff;
+    border: none;
+    padding: 10px 20px;
+    cursor: pointer;
+    margin: 0 5px;
+    border-radius: 4px;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+.toggle-buttons button:hover {
+    background-color: #e59400;
+}
+
+.toggle-buttons .active {
+    background-color: #333;
+    color: #ffa31a;
+}
+
+#userTable,
+#configTable {
+    display: none; /* Hide tables initially */
+}
+
+
+/* Afficher les éléments quand la classe show est ajoutée */
+#userTable.show,
+#configTable.show,
+#searchInput.show {
+    display: block;
+}

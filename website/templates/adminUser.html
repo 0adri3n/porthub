@@ -28,12 +28,21 @@
         </div>
     </header>
     <main>
+
+        <div class="toggle-buttons">
+            <button id="toggleUserButton" onclick="showUsersTable()">Afficher Utilisateurs</button>
+            <button id="toggleConfigButton" onclick="showConfigsTable()">Afficher Configurations</button>
+        </div>
+
         <h1>Admin Panel</h1>
 
-        <!-- Champ de recherche pour les utilisateurs -->
-        <input type="text" id="searchInput" oninput="filterUsers()" placeholder="Rechercher par nom d'utilisateur">
 
-        <!-- Tableau pour afficher les utilisateurs -->
+<input type="text" id="searchInputUser" oninput="filterUsers()" placeholder="Rechercher par nom d'utilisateur" style="display: none;" class="searchInput">
+
+
+<input type="text" id="searchInputConfig" oninput="filterConfigs()" placeholder="Rechercher par nom de configuration" style="display: none;" class="searchInput">
+
+     
         <table id="userTable">
             <thead>
                 <tr>
@@ -46,7 +55,7 @@
                 </tr>
             </thead>
             <tbody>
-                <!-- Boucle pour afficher chaque utilisateur -->
+              
                 {% for user in users %}
                 <tr>
                     <td>{{ user.username }}</td>
@@ -60,7 +69,9 @@
             </tbody>
         </table>
 
-        <!-- Tableau pour afficher les configurations -->
+   
+
+       
         <table id="configTable">
             <thead>
                 <tr>
@@ -73,7 +84,7 @@
                 </tr>
             </thead>
             <tbody>
-                <!-- Data will be dynamically populated here -->
+               
             </tbody>
         </table>
 

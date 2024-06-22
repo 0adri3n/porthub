@@ -1,7 +1,9 @@
 document.addEventListener('DOMContentLoaded', function() {
     initializeLogoutButton();
     fetchUsers();
+    fetchConfigs();
     initializeEditUserModal();
+    showUsersTable(); // Par défaut, afficher le tableau des utilisateurs et le champ de recherche associé.
 });
 
 function initializeLogoutButton() {
@@ -232,4 +234,46 @@ function populateConfigTable(configs) {
         `;
         tableBody.appendChild(row);
     });
+}
+
+function showUsersTable() {
+    document.getElementById('userTable').style.display = 'table';
+    document.getElementById('configTable').style.display = 'none';
+    document.getElementById('searchInputUser').style.display = 'block';
+    document.getElementById('searchInputConfig').style.display = 'none';
+    document.getElementById('toggleUserButton').classList.add('active');
+    document.getElementById('toggleConfigButton').classList.remove('active');
+}
+
+function showConfigsTable() {
+    document.getElementById('userTable').style.display = 'none';
+    document.getElementById('configTable').style.display = 'table';
+    document.getElementById('searchInputUser').style.display = 'none';
+    document.getElementById('searchInputConfig').style.display = 'block';
+    document.getElementById('toggleUserButton').classList.remove('active');
+    document.getElementById('toggleConfigButton').classList.add('active');
+}
+
+
+function filterConfigs() {
+    const input = document.getElementById('searchInputConfig');
+    const filter = input.value.toUpperCase();
+    const table = document.getElementById('configTable');
+    const rows = table.getElementsByTagName('tr');
+
+    for (let i = 1; i < rows.length; i++) {
+        const cells = rows[i].getElementsByTagName('td');
+        let found = false;
+        for (let j = 0; j < cells.length; j++) {
+            const cell = cells[j];
+            if (cell) {
+                const cellText = cell.textContent || cell.innerText;
+                if (cellText.toUpperCase().indexOf(filter) > -1) {
+                    found = true;
+                    break;
+                }
+            }
+        }
+        rows[i].style.display = found ? '' : 'none';
+    }
 }
