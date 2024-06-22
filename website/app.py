@@ -171,12 +171,14 @@ def stop_websocket(port):
 def home():
     return render_template('index.html')
 
-@app.route('/refresh', methods=['POST'])
+@app.route('/refresh', methods=['GET'])
 @jwt_required(locations=["cookies"],refresh=True)  # Assurez-vous que cela correspond à votre configuration
 def refresh():
     current_user = get_jwt_identity()
     access_token = create_access_token(identity=current_user)
     return jsonify(access_token=access_token), 200
+
+
 
 @app.route('/token/<string:token>', methods=['GET'])
 def getToken(token):
@@ -555,6 +557,75 @@ def signal_handler(sig, frame):
         thread[0].join()
     print('Exiting...')
     sys.exit(0)
+
+
+@app.route('/config/<int:port>', methods=["GET"])
+@jwt_required(locations=["cookies"])
+def getConfig(port):
+    try:
+        current_user = get_jwt_identity()
+        if not current_user:
+            return jsonify({'error': 'Unauthorized'}), 401
+        
+        # Récupérer la configuration depuis la base de données en fonction de l'utilisateur et du port
+        response = table_config.get_item(
+            Key={
+                'username': current_user['username'],
+                'port': port
+            }
+        )
+        config = response.get('Item')
+
+        if config:
+            return jsonify({'config': config}), 200
+        else:
+            return jsonify({'message': 'Config not found'}), 404
+
+    except ClientError as e:
+        return jsonify({'error': 'Error retrieving config', 'details': str(e)}), 500
+
+@app.route('/config/<int:port>', methods=["PUT"])
+@jwt_required()
+def updateConfigUsersCount(port):
+    try:
+        current_user = get_jwt_identity()
+        if not current_user:
+            return jsonify({'error': 'Unauthorized'}), 401
+        
+        # Vérifier si l'utilisateur est administrateur
+        if not current_user.get('is_admin', False):
+            return jsonify({'error': 'Unauthorized, admin access required'}), 401
+        
+        # Récupérer les données JSON de la requête
+        request_data = request.get_json()
+        new_users_count = request_data.get('users_count')
+
+        if new_users_count is None:
+            return jsonify({'error': 'Users count must be provided in JSON'}), 400
+        
+        # Mettre à jour le nombre d'utilisateurs dans la configuration
+        response = table_config.update_item(
+            Key={
+                'username': current_user['username'],  # Clé de partition (hash key)
+                'port': port  # Clé de tri (range key) ou une autre clé selon votre schéma
+            },
+            UpdateExpression='SET users_count = :uc',
+            ExpressionAttributeValues={
+                ':uc': int(new_users_count)
+            },
+            ReturnValues='UPDATED_NEW'
+        )
+        
+        updated_config = response.get('Attributes')
+        if updated_config:
+            return jsonify({'message': 'Users count updated successfully', 'config': updated_config}), 200
+        else:
+            return jsonify({'error': 'Failed to update users count'}), 500
+
+    except ClientError as e:
+        return jsonify({'error': 'Error updating users count', 'details': str(e)}), 500
+
+
 
 
 if __name__ == '__main__':
