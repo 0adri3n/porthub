@@ -2,6 +2,7 @@ const { app, BrowserWindow, ipcMain } = require('electron');
 const path = require('path');
 const url = require('url');
 const WebSocket = require('ws');
+const axios = require('axios');
 
 let win;
 let ws;
@@ -30,19 +31,61 @@ function createWindow() {
   });
 }
 
-// Handling credential check through WebSocket
+
 ipcMain.handle('check-credentials', async (event, token, username) => {
+  try {
+    const response = await axios.get('http://127.0.0.1:5000/token/' + token);
+    console.log(response.data.exists);
 
-  const decoded = atob(token);
-  const jsonObject = JSON.parse(decoded);
-  port = jsonObject.port;
-  pseudo = username;
-  console.log(username);
-  ws = new WebSocket('ws://localhost:'+port);
-  console.log(port); 
+    if (response.data.exists === true) {
+      console.log('OK');
+      const decoded = atob(token);
+      const jsonObject = JSON.parse(decoded);
+      const port = jsonObject.port;
+      const pseudo = username;
+      console.log(username);
 
-  return true;
+      const ws = new WebSocket('ws://localhost:' + port);
+      console.log(port);
+
+      return true;
+    } else {
+      console.log("false finalement");
+      return false;
+    }
+  } catch (error) {
+    console.log(error);
+    return false;
+  }
 });
+
+// Handling credential check through WebSocket
+// ipcMain.handle('check-credentials', async (event, token, username) => {
+//     axios.get('http://127.0.0.1:5000/token/'+token)
+//       .then(response => {
+//         console.log(response.data.exists);
+//         if (response.data.exists === true){
+//           console.log('OK')
+//           const decoded = atob(token);
+//           const jsonObject = JSON.parse(decoded);
+//           port = jsonObject.port;
+//           pseudo = username;
+//           console.log(username);
+//           ws = new WebSocket('ws://localhost:'+port);
+//           console.log(port); 
+//           return true;
+//         }
+//         else{
+//           console.log("false finalement")
+//           return false;
+//         }
+//       })
+//       .catch(error => {
+//         console.log(error)
+//         return false;
+//       });
+
+// });
 
 // Load second page on valid credentials
 ipcMain.on('load-second-page', (event, data) => {

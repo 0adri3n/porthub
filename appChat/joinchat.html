@@ -117,8 +117,8 @@
     const username = document.getElementById('usernameInput').value;
 
     const isValid = await window.api.checkCredentials(token, username);
-
-    if (isValid) {
+    console.log(isValid)
+    if (isValid === true) {
       window.api.loadSecondPage();
     } else {
       alert('Token ou nom d\'utilisateur invalide, veuillez réessayer.');

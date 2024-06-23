@@ -106,32 +106,32 @@ class WebSocketThread(threading.Thread):
         self.port = configuration["port"]
         self.stop_event = stop_event
         self.server = None
+        self.connected_clients = set()
 
     def run(self):
-        port = self.configuration["port"]
-        asyncio.run(self.start_server(port))
+        asyncio.run(self.start_server(self.port))
 
     async def start_server(self, port):
         try:
             print(f"Starting WebSocket server on port {port}")
-            async with websockets.serve(self.register_client, "localhost", port):
-                print(f"WebSocket server running on port {port}")
-                await self.stop_event.wait()
+            self.server = await websockets.serve(self.register_client, "0.0.0.0", port)
+            print(f"WebSocket server running on port {port}")
+            await self.stop_event.wait()
         except Exception as e:
             print(f"WebSocket server on port {port} encountered an error:", e)
 
-    async def register_client(self, websocket: websockets.WebSocketServerProtocol):
-        global connected_clients
-        connected_clients.add(websocket)
+    async def register_client(self, websocket: WebSocketServerProtocol):
+        self.connected_clients.add(websocket)
+        print("Client registered")
         try:
             async for message in websocket:
                 await self.broadcast(message)
         finally:
-            connected_clients.remove(websocket)
+            self.connected_clients.remove(websocket)
 
     async def broadcast(self, message: str):
-        if connected_clients:
-            await asyncio.wait([client.send(message) for client in connected_clients])
+        if self.connected_clients:
+            await asyncio.gather(*(client.send(message) for client in self.connected_clients))
 
     def stop_server(self):
         if self.server:
@@ -139,29 +139,29 @@ class WebSocketThread(threading.Thread):
             asyncio.new_event_loop().run_until_complete(asyncio.sleep(1))
             self.stop_event.set()
 
-connected_clients: Set[websockets.WebSocketServerProtocol] = set()
+connected_clients: Set[WebSocketServerProtocol] = set()
 websocket_threads = []
 
 def start_websocket(configuration):
-    stop_event = threading.Event()
+    stop_event = asyncio.Event()
     thread = WebSocketThread(configuration, stop_event)
     thread.start()
-    websocket_threads.append(thread)
+    websocket_threads.append((thread, stop_event))
 
 def stop_websocket(port):
     global websocket_threads
 
     # Find the WebSocket thread corresponding to the specified port
     threads_to_remove = []
-    for thread in websocket_threads:
+    for thread, stop_event in websocket_threads:
         if int(thread.configuration["port"]) == int(port):
             print("Stopping WebSocket server on port:", port)
-            thread.stop_event.set()
-            threads_to_remove.append(thread)
+            stop_event.set()
+            threads_to_remove.append((thread, stop_event))
 
     # Remove the thread from the list
-    for thread in threads_to_remove:
-        websocket_threads.remove(thread)
+    for thread, stop_event in threads_to_remove:
+        websocket_threads.remove((thread, stop_event))
 
 
 
@@ -178,6 +178,22 @@ def admin_required(fn):
 @app.route('/')
 def home():
     return render_template('index.html')
+
+
+@app.route('/token/<string:token>', methods=['GET'])
+def getToken(token):
+    try:
+        # Recherche dans la table `configs` pour voir si le token existe
+        response = table_config.scan(FilterExpression=Attr('config_encoded').eq(token))
+        items = response.get('Items', [])
+        
+        if items:
+            return jsonify({'exists': True}), 200
+        else:
+            return jsonify({'exists': False}), 404
+    except ClientError as e:
+        return jsonify({'error': 'Error checking token', 'details': str(e)}), 500
+
 
 @app.route('/registerdb', methods=["POST"])
 def registerUser():
@@ -444,6 +460,7 @@ def register():
     return render_template("register.html")
 
 
+
 @app.route('/create_config', methods=["POST"])
 def create_config():
     passwd = request.form["password"]
@@ -475,7 +492,8 @@ def create_config():
         'passwd': passwd,
         'port': port,
         'users_count': users_count,
-        'creation_date': datetime.datetime.fromtimestamp(ts).strftime('%Y-%m-%d %H:%M:%S')
+        'creation_date': datetime.datetime.fromtimestamp(ts).strftime('%Y-%m-%d %H:%M:%S'),
+        'config_encoded' : encoded_configuration
     }
     try:
         table_config.put_item(Item=new_config)
