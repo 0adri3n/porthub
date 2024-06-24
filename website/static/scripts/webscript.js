@@ -407,7 +407,7 @@ document.addEventListener('DOMContentLoaded', function() {
 document.addEventListener("DOMContentLoaded", function() {
     fetchUsers();
 });
-
+}
 function fetchUsers() {
     fetch('/users', {
         method: 'GET',
