@@ -28,12 +28,21 @@
         </div>
     </header>
     <main>
-        <h1>Admin Panel For User</h1>
 
-        <!-- Champ de recherche -->
-        <input type="text" id="searchInput" oninput="filterUsers()" placeholder="Rechercher par nom d'utilisateur">
+        <div class="toggle-buttons">
+            <button id="toggleUserButton" onclick="showUsersTable()">Afficher Utilisateurs</button>
+            <button id="toggleConfigButton" onclick="showConfigsTable()">Afficher Configurations</button>
+        </div>
 
-        <!-- Tableau pour afficher les utilisateurs -->
+        <h1>Admin Panel</h1>
+
+
+<input type="text" id="searchInputUser" oninput="filterUsers()" placeholder="Rechercher par nom d'utilisateur" style="display: none;" class="searchInput">
+
+
+<input type="text" id="searchInputConfig" oninput="filterConfigs()" placeholder="Rechercher par nom de configuration" style="display: none;" class="searchInput">
+
+     
         <table id="userTable">
             <thead>
                 <tr>
@@ -46,7 +55,7 @@
                 </tr>
             </thead>
             <tbody>
-                <!-- Boucle pour afficher chaque utilisateur -->
+              
                 {% for user in users %}
                 <tr>
                     <td>{{ user.username }}</td>
@@ -55,6 +64,34 @@
                     <td>{{ user.is_admin }}</td>
                     <td><button class="btnEdit">Modifier</button></td>
                     <td><button class="btnEdit" onclick="deleteUser('{{ user.username }}')">Supprimer</button></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+   
+
+       
+        <table id="configTable">
+            <thead>
+                <tr>
+                    <th>Nom de la configuration</th>
+                    <th>Port</th>
+                    <th>Nombre d'utilisateurs</th>
+                    <th>Date de création</th>
+                    <th>Action</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for config in configs %}
+                <tr>
+                    <td>{{ config.username }}</td>
+                    <td>{{ config.port }}</td>
+                    <td>{{ config.users_count }}</td>
+                    <td>{{ config.creation_date }}</td>
+                    <td><button class="btnEdit" onclick="editConfig('{{ config.port }}', '{{ current_user }}')">Modifier</button></td>
+                    <td><button class="btnEdit" onclick="deleteConfig('{{ config.port }}')">Supprimer</button></td>
                 </tr>
                 {% endfor %}
             </tbody>
@@ -75,6 +112,25 @@
                 </form>
             </div>
         </div>
+        <div id="editConfigModal" class="modal">
+            <div class="modal-content">
+                <span class="close">&times;</span>
+                <h2>Modifier la configuration</h2>
+                <form id="editConfigForm" >
+                    <!-- Champs de formulaire pour éditer la configuration -->
+                    <label for="editConfigName">Nom de la configuration:</label>
+                    <input type="text" id="editConfigName" name="configName" readonly>
+                    <label for="editPort">Port:</label>
+                    <input type="text" id="editPort" name="port" readonly>
+                    <label for="editUserCount">Nombre d'utilisateurs:</label>
+                    <input type="number" id="editUserCount" name="userCount" required min="2">
+                    <label for="editCreationDate">Date de création:</label>
+                    <input type="text" id="editCreationDate" name="creationDate" readonly>
+                    <button type="submit" class="btn">Enregistrer</button>
+                </form>
+            </div>
+        </div>
+
     </main>
     <footer>
         <div class="container">

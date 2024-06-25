@@ -16,7 +16,7 @@ import signal
 import sys
 from websockets import WebSocketServerProtocol
 from typing import Set
-from flask_jwt_extended import JWTManager, jwt_required, get_jwt_identity, create_access_token, create_access_token
+from flask_jwt_extended import JWTManager, jwt_required, get_jwt_identity, create_access_token, get_jwt_identity
 import datetime
 import time
 from datetime import timedelta
@@ -25,8 +25,8 @@ from datetime import timedelta
 load_dotenv()
 
 app = Flask(__name__)
-app.config["SECRET_KEY"] = os.getenv('SECRET_KEY')
-app.config["JWT_SECRET_KEY"] = os.getenv('JWT_SECRET_KEY')
+app.config["SECRET_KEY"] = "RomainLeoAdrienAmnaNathan"
+app.config["JWT_SECRET_KEY"] ="NathanLeoAdrienRomainAmna"
 app.config["JWT_TOKEN_LOCATION"] = ["cookies"]
 app.config["JWT_COOKIE_SECURE"] = True  # Mettre à True en production avec HTTPS
 app.config["JWT_ACCESS_COOKIE_PATH"] = "/"
@@ -37,8 +37,8 @@ app.config["JWT_REFRESH_TOKEN_EXPIRES"] = timedelta(days=365)
 
 
 # Récupérer les clés d'accès depuis les variables d'environnement
-aws_access_key_id = os.getenv('AWS_ACCESS_KEY_ID')
-aws_secret_access_key = os.getenv('AWS_SECRET_ACCESS_KEY')
+aws_access_key_id = "AKIAZQ3DT3D4D4FHKNV4"
+aws_secret_access_key = "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"
 aws_region = os.getenv('AWS_REGION', 'eu-west-3')  # Assurez-vous de définir votre région AWS dans le fichier .env
 
 
@@ -109,30 +109,40 @@ class WebSocketThread(threading.Thread):
         self.port = configuration["port"]
         self.stop_event = stop_event
         self.server = None
+        self.connected_clients = set()
+        self.connected_clients = set()
 
     def run(self):
-        port = self.configuration["port"]
-        asyncio.run(self.start_server(port))
+        asyncio.run(self.start_server(self.port))
+        asyncio.run(self.start_server(self.port))
 
     async def start_server(self, port):
         try:
-            async with websockets.serve(self.register_client, "localhost", port):
-                await self.stop_event.wait()
+            print(f"Starting WebSocket server on port {port}")
+            self.server = await websockets.serve(self.register_client, "0.0.0.0", port)
+            print(f"WebSocket server running on port {port}")
+            await self.stop_event.wait()
+            self.server = await websockets.serve(self.register_client, "0.0.0.0", port)
+            print(f"WebSocket server running on port {port}")
+            await self.stop_event.wait()
         except Exception as e:
             print(f"WebSocket server on port {port} encountered an error:", e)
 
-    async def register_client(self, websocket: websockets.WebSocketServerProtocol):
-        global connected_clients
-        connected_clients.add(websocket)
+    async def register_client(self, websocket: WebSocketServerProtocol):
+        self.connected_clients.add(websocket)
+        print("Client registered")
+    async def register_client(self, websocket: WebSocketServerProtocol):
+        self.connected_clients.add(websocket)
+        print("Client registered")
         try:
             async for message in websocket:
                 await self.broadcast(message)
         finally:
-            connected_clients.remove(websocket)
+            self.self.connected_clients.remove(websocket)
 
     async def broadcast(self, message: str):
-        if connected_clients:
-            await asyncio.wait([client.send(message) for client in connected_clients])
+        if self.connected_clients:
+            await asyncio.gather(*(client.send(message) for client in self.connected_clients))
 
     def stop_server(self):
         if self.server:
@@ -140,37 +150,84 @@ class WebSocketThread(threading.Thread):
             asyncio.new_event_loop().run_until_complete(asyncio.sleep(1))
             self.stop_event.set()
 
-connected_clients: Set[websockets.WebSocketServerProtocol] = set()
+connected_clients: Set[WebSocketServerProtocol] = set()
 websocket_threads = []
 
-
-
 def start_websocket(configuration):
-    stop_event = threading.Event()
+    stop_event = asyncio.Event()
+    stop_event = asyncio.Event()
     thread = WebSocketThread(configuration, stop_event)
     thread.start()
-    websocket_threads.append(thread)
+    websocket_threads.append((thread, stop_event))
+    websocket_threads.append((thread, stop_event))
 
 def stop_websocket(port):
     global websocket_threads
 
     # Find the WebSocket thread corresponding to the specified port
     threads_to_remove = []
-    for thread in websocket_threads:
+    for thread, stop_event, stop_event in websocket_threads:
         if int(thread.configuration["port"]) == int(port):
             print("Stopping WebSocket server on port:", port)
-            thread.stop_event.set()
-            threads_to_remove.append(thread)
+            stop_event.set()
+            threads_to_remove.append((thread, stop_event))
+            stop_event.set()
+            threads_to_remove.append((thread, stop_event))
 
     # Remove the thread from the list
-    for thread in threads_to_remove:
-        websocket_threads.remove(thread)
+    for thread, stop_event in threads_to_remove:
+        websocket_threads.remove((thread, stop_event))
+
+    for thread, stop_event in threads_to_remove:
+        websocket_threads.remove((thread, stop_event))
+connected_clients: Set[WebSocketServerProtocol] = set()
+websocket_threads = []
+
+
+
+def start_websocket(configuration):
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+    stop_event = asyncio.Event()
+    thread = WebSocketThread(configuration, stop_event)
+    thread.start()
+    websocket_threads.append((thread, stop_event))
+
+
+def stop_websocket(port):
+    global websocket_threads
+
+    # Find the WebSocket thread corresponding to the specified port
+    threads_to_remove = []
+    for thread, stop_event in websocket_threads:
+        if int(thread.configuration["port"]) == int(port):
+            print("Stopping WebSocket server on port:", port)
+            stop_event.set()
+            threads_to_remove.append((thread, stop_event))
+
+    # Remove the thread from the list
+    for thread, stop_event in threads_to_remove:
+        websocket_threads.remove((thread, stop_event))
 
 
 @app.route('/')
 def home():
     return render_template('index.html')
 
+
+@app.route('/token/<string:token>', methods=['GET'])
+def getToken(token):
+    try:
+        # Recherche dans la table `configs` pour voir si le token existe
+        response = table_config.scan(FilterExpression=Attr('config_encoded').eq(token))
+        items = response.get('Items', [])
+        
+        if items:
+            return jsonify({'exists': True}), 200
+        else:
+            return jsonify({'exists': False}), 404
+    except ClientError as e:
+        return jsonify({'error': 'Error checking token', 'details': str(e)}), 500
 
 
 @app.route('/registerdb', methods=["POST"])
@@ -440,6 +497,7 @@ def register():
     return render_template("register.html")
 
 
+
 @app.route('/create_config', methods=["POST"])
 def create_config():
     passwd = request.form["password"]
@@ -471,7 +529,9 @@ def create_config():
         'passwd': passwd,
         'port': port,
         'users_count': users_count,
-        'creation_date': datetime.datetime.fromtimestamp(ts).strftime('%Y-%m-%d %H:%M:%S')
+        'creation_date': datetime.datetime.fromtimestamp(ts).strftime('%Y-%m-%d %H:%M:%S'),
+        'config_encoded' : encoded_configuration,
+        'config_encoded' : encoded_configuration
     }
     try:
         table_config.put_item(Item=new_config)
@@ -532,6 +592,75 @@ def signal_handler(sig, frame):
         thread[0].join()
     print('Exiting...')
     sys.exit(0)
+
+
+@app.route('/config/<int:port>', methods=["GET"])
+@jwt_required(locations=["cookies"])
+def getConfig(port):
+    try:
+        current_user = get_jwt_identity()
+        if not current_user:
+            return jsonify({'error': 'Unauthorized'}), 401
+        
+        # Récupérer la configuration depuis la base de données en fonction de l'utilisateur et du port
+        response = table_config.get_item(
+            Key={
+                'username': current_user['username'],
+                'port': port
+            }
+        )
+        config = response.get('Item')
+
+        if config:
+            return jsonify({'config': config}), 200
+        else:
+            return jsonify({'message': 'Config not found'}), 404
+
+    except ClientError as e:
+        return jsonify({'error': 'Error retrieving config', 'details': str(e)}), 500
+
+@app.route('/config/<int:port>', methods=["PUT"])
+@jwt_required()
+def updateConfigUsersCount(port):
+    try:
+        current_user = get_jwt_identity()
+        if not current_user:
+            return jsonify({'error': 'Unauthorized'}), 401
+        
+        # Vérifier si l'utilisateur est administrateur
+        if not current_user.get('is_admin', False):
+            return jsonify({'error': 'Unauthorized, admin access required'}), 401
+        
+        # Récupérer les données JSON de la requête
+        request_data = request.get_json()
+        new_users_count = request_data.get('users_count')
+
+        if new_users_count is None:
+            return jsonify({'error': 'Users count must be provided in JSON'}), 400
+        
+        # Mettre à jour le nombre d'utilisateurs dans la configuration
+        response = table_config.update_item(
+            Key={
+                'username': current_user['username'],  # Clé de partition (hash key)
+                'port': port  # Clé de tri (range key) ou une autre clé selon votre schéma
+            },
+            UpdateExpression='SET users_count = :uc',
+            ExpressionAttributeValues={
+                ':uc': int(new_users_count)
+            },
+            ReturnValues='UPDATED_NEW'
+        )
+        
+        updated_config = response.get('Attributes')
+        if updated_config:
+            return jsonify({'message': 'Users count updated successfully', 'config': updated_config}), 200
+        else:
+            return jsonify({'error': 'Failed to update users count'}), 500
+
+    except ClientError as e:
+        return jsonify({'error': 'Error updating users count', 'details': str(e)}), 500
+
+
 
 
 if __name__ == '__main__':
