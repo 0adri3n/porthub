@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>porthub - Chat Sécurisé</title>
-    <!-- Liens vers les fichiers CSS et JavaScript -->
     <link rel="stylesheet" href="../static/assets/style.css">
     <link rel="stylesheet" href="../static/assets/style_admin.css">
     <script src="../static/scripts/webscript.js"></script>
@@ -36,12 +35,8 @@
 
         <h1>Admin Panel</h1>
 
-
-<input type="text" id="searchInputUser" oninput="filterUsers()" placeholder="Rechercher par nom d'utilisateur" style="display: none;" class="searchInput">
-
-
-<input type="text" id="searchInputConfig" oninput="filterConfigs()" placeholder="Rechercher par nom de configuration" style="display: none;" class="searchInput">
-
+        <input type="text" id="searchInputUser" oninput="filterUsers()" placeholder="Rechercher par nom d'utilisateur" style="display: none;" class="searchInput">
+        <input type="text" id="searchInputConfig" oninput="filterConfigs()" placeholder="Rechercher par nom de configuration" style="display: none;" class="searchInput">
      
         <table id="userTable">
             <thead>
@@ -55,7 +50,6 @@
                 </tr>
             </thead>
             <tbody>
-              
                 {% for user in users %}
                 <tr>
                     <td>{{ user.username }}</td>
@@ -69,9 +63,6 @@
             </tbody>
         </table>
 
-   
-
-       
         <table id="configTable">
             <thead>
                 <tr>
@@ -112,12 +103,12 @@
                 </form>
             </div>
         </div>
+
         <div id="editConfigModal" class="modal">
             <div class="modal-content">
                 <span class="close">&times;</span>
                 <h2>Modifier la configuration</h2>
-                <form id="editConfigForm" >
-                    <!-- Champs de formulaire pour éditer la configuration -->
+                <form id="editConfigForm">
                     <label for="editConfigName">Nom de la configuration:</label>
                     <input type="text" id="editConfigName" name="configName" readonly>
                     <label for="editPort">Port:</label>
