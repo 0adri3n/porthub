@@ -32,7 +32,7 @@ app.config["JWT_COOKIE_SECURE"] = True  # Mettre à True en production avec HTTP
 app.config["JWT_ACCESS_COOKIE_PATH"] = "/"
 app.config["JWT_REFRESH_COOKIE_PATH"] = "/refresh"
 app.config["JWT_COOKIE_CSRF_PROTECT"] = True  # Mettre à True en production
-app.config["JWT_ACCESS_TOKEN_EXPIRES"] = timedelta(days=10)  # Durée de validité de l'access token
+app.config["JWT_ACCESS_TOKEN_EXPIRES"] = timedelta(days=30)  # Durée de validité de l'access token
 app.config["JWT_REFRESH_TOKEN_EXPIRES"] = timedelta(days=365)
 
 
@@ -171,12 +171,7 @@ def stop_websocket(port):
 def home():
     return render_template('index.html')
 
-@app.route('/refresh', methods=['POST'])
-@jwt_required(locations=["cookies"],refresh=True)  # Assurez-vous que cela correspond à votre configuration
-def refresh():
-    current_user = get_jwt_identity()
-    access_token = create_access_token(identity=current_user)
-    return jsonify(access_token=access_token), 200
+
 
 @app.route('/registerdb', methods=["POST"])
 def registerUser():
