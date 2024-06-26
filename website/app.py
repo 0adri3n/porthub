@@ -111,6 +111,7 @@ class WebSocketThread(threading.Thread):
         self.server = None
         self.connected_clients = set()
         self.connected_clients = set()
+        self.clients_count = 0
 
     def run(self):
         asyncio.run(self.start_server(self.port))
@@ -132,13 +133,15 @@ class WebSocketThread(threading.Thread):
         self.connected_clients.add(websocket)
         print("Client registered")
     async def register_client(self, websocket: WebSocketServerProtocol):
-        self.connected_clients.add(websocket)
-        print("Client registered")
-        try:
-            async for message in websocket:
-                await self.broadcast(message)
-        finally:
-            self.self.connected_clients.remove(websocket)
+        if self.clients_count <= self.configuration["users_count"] :
+            self.connected_clients.add(websocket)
+            self.clients_count += 1
+            print("Client registered")
+            try:
+                async for message in websocket:
+                    await self.broadcast(message)
+            finally:
+                self.self.connected_clients.remove(websocket)
 
     async def broadcast(self, message: str):
         if self.connected_clients:
@@ -180,6 +183,7 @@ def stop_websocket(port):
 
     for thread, stop_event in threads_to_remove:
         websocket_threads.remove((thread, stop_event))
+
 connected_clients: Set[WebSocketServerProtocol] = set()
 websocket_threads = []
 
@@ -665,6 +669,6 @@ def updateConfigUsersCount(port):
 
 if __name__ == '__main__':
     signal.signal(signal.SIGINT, signal_handler)
-    app.run(debug=True)
+    app.run(debug=True, host="0.0.0.0")
 
     
