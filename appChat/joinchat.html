@@ -1,132 +1,150 @@
 <!DOCTYPE html>
 <html lang="fr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WebSocket Test</title>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PortHub Connect Portal</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/web-socket-js/1.0.0/web_socket.min.js"></script>
     <script src="WebSocketMain.swf"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/web-socket-js/1.0.0/web_socket.js"></script>
     <style>
-        body {
-            background-color: #121212;
-            color: #ffffff;
-            font-family: Arial, sans-serif;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
-            margin: 0;
+      html,
+      body {
+        height: 100%;
+        margin: 0;
+        font-family: Arial, sans-serif;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background-color: #121212;
+        color: #ffffff;
+      }
+
+      .modal {
+        position: fixed;
+        z-index: 1;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        overflow: auto;
+        background-size: cover;
+        background-position: center;
+      }
+
+      .modal-content {
+        position: relative;
+        margin: 15% auto;
+        padding: 20px;
+        width: 80%;
+        max-width: 400px;
+        color: #ffffff;
+        background: linear-gradient(
+          135deg,
+          rgba(255, 255, 255, 0.1),
+          rgba(255, 255, 255, 0)
+        );
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border-radius: 20px;
+        border: 1px solid rgba(255, 255, 255, 0.18);
+        box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+      }
+
+      .modal-content h2 {
+        margin-top: 0;
+        margin-bottom: 0;
+      }
+
+      .modal-content #usernameInput,
+      .modal-content #tokenInput {
+        margin-bottom: 15px;
+        margin-top: 15px;
+        padding: 10px;
+        border: 1px solid #333;
+        border-radius: 4px;
+        background-color: #333;
+        color: #fff;
+        width: calc(100% - 24px);
+      }
+
+      button {
+        padding: 10px 20px;
+        border: none;
+        border-radius: 4px;
+        background-color: #ffa31a;
+        color: #fff;
+        cursor: pointer;
+      }
+
+      button:hover {
+        background-color: #1b1b1b;
+      }
+
+      /* Background animation */
+      .bg {
+        animation: slide 3s ease-in-out infinite alternate;
+        background-image: linear-gradient(-60deg, #ffa31a 50%, #1b1b1b 50%);
+        bottom: 0;
+        left: -50%;
+        opacity: 0.5;
+        position: fixed;
+        right: -50%;
+        top: 0;
+        z-index: -1;
+      }
+
+      .bg2 {
+        animation-direction: alternate-reverse;
+        animation-duration: 4s;
+      }
+
+      .bg3 {
+        animation-duration: 5s;
+      }
+
+      @keyframes slide {
+        0% {
+          transform: translateX(-25%);
         }
-
-        .container {
-            width: 100%;
-            max-width: 600px;
-            padding: 20px;
-            background-color: #1e1e1e;
-            border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        100% {
+          transform: translateX(25%);
         }
-
-        input[type="text"] {
-            width: calc(100% - 100px);
-            padding: 10px;
-            margin-right: 10px;
-            border: 1px solid #333;
-            border-radius: 4px;
-            background-color: #333;
-            color: #fff;
-        }
-
-        button {
-            padding: 10px 20px;
-            border: none;
-            border-radius: 4px;
-            background-color: #6200ee;
-            color: #fff;
-            cursor: pointer;
-        }
-
-        button:hover {
-            background-color: #3700b3;
-        }
-
-        #messages {
-            margin-top: 20px;
-            max-height: 300px;
-            overflow-y: auto;
-            background-color: #252525;
-            border: 1px solid #333;
-            border-radius: 4px;
-            padding: 10px;
-        }
-
-        .message {
-            margin: 5px 0;
-        }
-
-        /* Username added */
-
-        .modal {
-    position: fixed;
-    z-index: 1;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    overflow: auto;
-    background-color: rgba(0,0,0,0.4);
-}
-
-.modal-content {
-    background-color: #1e1e1e;
-    margin: 15% auto;
-    padding: 20px;
-    width: 80%;
-    max-width: 400px;
-    border-radius: 8px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-    color: #ffffff;
-}
-
-.modal-content h2 {
-    margin-top: 0;
-}
-
-
+      }
     </style>
-</head>
-<body>
-    <div id="tokenEntry" class="modal">
-        <div class="modal-content">
-            <h2>Entrez votre Token</h2>
-            <input type="text" id="tokenInput" placeholder="token">
-            <h2>Entrez votre nom d'utilisateur</h2>
-            <input type="text" id="usernameInput" placeholder="Nom d'utilisateur">
-            <button id="joinButton" type="submit">Rejoindre</button>
-        </div>
+  </head>
+  <body>
+    <div class="modal">
+      <div class="bg"></div>
+      <div class="bg bg2"></div>
+      <div class="bg bg3"></div>
+      <div class="modal-content">
+        <h1>Login</h1>
+        <h2>Entrez votre Token</h2>
+        <input type="text" id="tokenInput" placeholder="token" />
+        <h2>Entrez votre nom d'utilisateur</h2>
+        <input type="text" id="usernameInput" placeholder="Nom d'utilisateur" />
+        <button id="joinButton" type="submit">Rejoindre</button>
+      </div>
     </div>
 
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-  const joinButton = document.getElementById('joinButton');
-  
-  joinButton.addEventListener('click', async () => {
-    const token = document.getElementById('tokenInput').value;
-    const username = document.getElementById('usernameInput').value;
+      document.addEventListener("DOMContentLoaded", () => {
+        const joinButton = document.getElementById("joinButton");
 
-    const isValid = await window.api.checkCredentials(token, username);
-    console.log(isValid)
-    if (isValid === true) {
-      window.api.loadSecondPage();
-    } else {
-      alert('Token ou nom d\'utilisateur invalide, veuillez réessayer.');
-    }
-  });
-});
+        joinButton.addEventListener("click", async () => {
+          const token = document.getElementById("tokenInput").value;
+          const username = document.getElementById("usernameInput").value;
 
+          const isValid = await window.api.checkCredentials(token, username);
+          console.log(isValid);
+          if (isValid === true) {
+            window.api.loadSecondPage();
+          } else {
+            alert("Token ou nom d'utilisateur invalide, veuillez réessayer.");
+          }
+        });
+      });
     </script>
-
-</body>
+  </body>
 </html>
