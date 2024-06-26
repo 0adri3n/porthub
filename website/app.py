@@ -142,6 +142,7 @@ class WebSocketThread(threading.Thread):
                     await self.broadcast(message)
             finally:
                 self.connected_clients.remove(websocket)
+                self.clients_count -= 1
 
     async def broadcast(self, message: str):
         if self.connected_clients:
