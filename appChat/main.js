@@ -34,7 +34,7 @@ function createWindow() {
 
 ipcMain.handle('check-credentials', async (event, token, username) => {
   try {
-    const response = await axios.get('http://127.0.0.1:5000/token/' + token);
+    const response = await axios.get('http://10.101.0.131:5000/token/' + token);
     console.log(response.data.exists);
 
     if (response.data.exists === true) {
@@ -45,7 +45,7 @@ ipcMain.handle('check-credentials', async (event, token, username) => {
       pseudo = username;
       console.log(username);
 
-      ws = new WebSocket('ws://localhost:' + port);
+    //   ws = new WebSocket('ws://10.101.0.131:' + port);
       console.log(port);
 
       return true;

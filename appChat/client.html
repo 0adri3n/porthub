@@ -129,7 +129,7 @@
             console.log(port,username);
     
             // Connexion WebSocket avec le port récupéré
-            ws = new WebSocket('ws://localhost:' + port);
+            ws = new WebSocket('ws://10.101.0.131:' + port);
     
             // Fonction pour gérer l'envoi de messages et la réception
             ws.onopen = function () {
