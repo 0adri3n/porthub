@@ -110,29 +110,21 @@ class WebSocketThread(threading.Thread):
         self.stop_event = stop_event
         self.server = None
         self.connected_clients = set()
-        self.connected_clients = set()
         self.clients_count = 0
 
     def run(self):
-        asyncio.run(self.start_server(self.port))
         asyncio.run(self.start_server(self.port))
 
     async def start_server(self, port):
         try:
             print(f"Starting WebSocket server on port {port}")
             self.server = await websockets.serve(self.register_client, "0.0.0.0", port)
-            print(f"WebSocket server running on port {port}")
-            await self.stop_event.wait()
-            self.server = await websockets.serve(self.register_client, "0.0.0.0", port)
-            print(f"WebSocket server running on port {port}")
             await self.stop_event.wait()
         except Exception as e:
             print(f"WebSocket server on port {port} encountered an error:", e)
 
     async def register_client(self, websocket: WebSocketServerProtocol):
-        self.connected_clients.add(websocket)
-        print("Client registered")
-    async def register_client(self, websocket: WebSocketServerProtocol):
+        
         if self.clients_count <= int(self.configuration["users_count"]) :
             self.connected_clients.add(websocket)
             self.clients_count += 1
@@ -141,10 +133,12 @@ class WebSocketThread(threading.Thread):
                 async for message in websocket:
                     await self.broadcast(message)
             finally:
-                self.self.connected_clients.remove(websocket)
+                self.connected_clients.remove(websocket)
+                self.clients_count -= 1
 
     async def broadcast(self, message: str):
         if self.connected_clients:
+            print(message)
             await asyncio.gather(*(client.send(message) for client in self.connected_clients))
 
     def stop_server(self):
