@@ -133,7 +133,7 @@ class WebSocketThread(threading.Thread):
         self.connected_clients.add(websocket)
         print("Client registered")
     async def register_client(self, websocket: WebSocketServerProtocol):
-        if self.clients_count <= self.configuration["users_count"] :
+        if self.clients_count <= int(self.configuration["users_count"]) :
             self.connected_clients.add(websocket)
             self.clients_count += 1
             print("Client registered")
