@@ -3,6 +3,9 @@ const path = require("path");
 const url = require("url");
 const WebSocket = require("ws");
 const axios = require("axios");
+const yaml = require("yaml");
+const fs = require("fs");
+
 
 let win;
 let ws;
@@ -37,7 +40,16 @@ function createWindow() {
 
 ipcMain.handle("check-credentials", async (event, token, username) => {
   try {
-    const response = await axios.get("http://127.0.0.1:5000/token/" + token);
+
+    let serverIp
+
+
+    const configFile = fs.readFileSync(path.join(__dirname, 'config.yaml'), 'utf8');
+    const config = yaml.parse(configFile);
+    serverIp = config.server.ip;
+
+    
+    const response = await axios.get("http://" + serverIp + ":5000/token/" + token);
     console.log(response.data.exists);
 
     if (response.data.exists === true) {
@@ -111,6 +123,32 @@ ipcMain.on("get-port", (event) => {
 ipcMain.on("get-username", (event) => {
   event.returnValue = pseudo;
 });
+
+ipcMain.handle("write-yaml", async (event, new_ip) => {
+  const fs = require('fs');
+  const jsyaml = require('js-yaml');
+
+  const dataToWrite = {
+    server: {
+      ip: new_ip,
+    }
+  };
+
+  const filePath = 'config.yaml';
+  const yamlText = jsyaml.dump(dataToWrite);
+
+  // Écrire dans le fichier
+  fs.writeFile(filePath, yamlText, (err) => {
+    if (err) {
+      return false;
+    } else {
+      console.log("carré")
+      return true;
+    }
+  });
+
+  
+})
 
 app.on("ready", createWindow);
 

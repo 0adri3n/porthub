@@ -9,5 +9,8 @@ contextBridge.exposeInMainWorld('api', {
   loadSecondPage: () => {
     ipcRenderer.send('load-second-page');
   },
+  writeyaml: async (new_ip) => {
+    return await ipcRenderer.invoke('write-yaml', new_ip);
+  },
 }
 );

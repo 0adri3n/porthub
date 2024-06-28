@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>PortHub Connect Portal</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/web-socket-js/1.0.0/web_socket.min.js"></script>
-    <script src="WebSocketMain.swf"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/web-socket-js/1.0.0/web_socket.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/js-yaml/dist/js-yaml.min.js"></script> <!-- Include js-yaml -->
     <style>
       html,
       body {
@@ -81,6 +81,46 @@
         background-color: #1b1b1b;
       }
 
+      /* Popup styles */
+      .popup {
+        display: none;
+        position: fixed;
+        z-index: 2;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        overflow: auto;
+        background-color: rgba(0, 0, 0, 0.5);
+      }
+
+      .popup-content {
+        background-color: #333;
+        margin: 15% auto;
+        padding: 20px;
+        width: 80%;
+        max-width: 400px;
+        border-radius: 10px;
+        color: #fff;
+      }
+
+      .popup-content h2 {
+        margin-top: 0;
+      }
+
+      .popup-content input[type="text"] {
+        margin-bottom: 15px;
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        background-color: #fff;
+        width: calc(100% - 20px);
+      }
+
+      .popup-content button {
+        margin-top: 10px;
+      }
+
       /* Background animation */
       .bg {
         animation: slide 3s ease-in-out infinite alternate;
@@ -103,6 +143,45 @@
         animation-duration: 5s;
       }
 
+      /* Styles pour le popup personnalisé */
+      .custom-popup {
+        display: none;
+        position: fixed;
+        z-index: 3;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        overflow: auto;
+        background-color: rgba(0, 0, 0, 0.5);
+      }
+
+      .custom-popup-content {
+        background-color: #333;
+        margin: 15% auto;
+        padding: 20px;
+        width: 80%;
+        max-width: 400px;
+        border-radius: 10px;
+        color: #fff;
+        text-align: center;
+      }
+
+      .custom-popup-content button {
+        margin-top: 20px;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 4px;
+        background-color: #ffa31a;
+        color: #fff;
+        cursor: pointer;
+      }
+
+      .custom-popup-content button:hover {
+        background-color: #1b1b1b;
+      }
+
+
       @keyframes slide {
         0% {
           transform: translateX(-25%);
@@ -121,30 +200,94 @@
       <div class="modal-content">
         <h1>Login</h1>
         <h2>Entrez votre Token</h2>
-        <input type="text" id="tokenInput" placeholder="token" />
+        <input type="text" id="tokenInput" placeholder="Token" />
         <h2>Entrez votre nom d'utilisateur</h2>
         <input type="text" id="usernameInput" placeholder="Nom d'utilisateur" />
-        <button id="joinButton" type="submit">Rejoindre</button>
+        <button id="joinButton">Rejoindre</button>
+        <button id="configButton">Configurer IP du serveur</button> <!-- Bouton pour ouvrir le popup -->
+      </div>
+      <div id="customPopup" class="custom-popup">
+        <div class="custom-popup-content">
+          <span id="customPopupMessage"></span>
+          <button id="customPopupCloseButton">Fermer</button>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Popup pour la configuration de l'IP du serveur -->
+    <div id="configPopup" class="popup">
+      <div class="popup-content">
+        <h2>Configuration IP du serveur</h2>
+        <input type="text" id="serverIpInput" placeholder="Adresse IP du serveur" />
+        <button id="saveIpButton">Enregistrer</button>
       </div>
     </div>
 
     <script>
-      document.addEventListener("DOMContentLoaded", () => {
+      document.addEventListener("DOMContentLoaded", async () => {
         const joinButton = document.getElementById("joinButton");
-
+        const configButton = document.getElementById("configButton");
+        const configPopup = document.getElementById("configPopup");
+        const serverIpInput = document.getElementById("serverIpInput");
+        const customPopup = document.getElementById("customPopup");
+        const customPopupMessage = document.getElementById("customPopupMessage");
+        const customPopupCloseButton = document.getElementById("customPopupCloseButton");
+    
+        // Fonction pour afficher le popup personnalisé
+        function showCustomPopup(message) {
+          customPopupMessage.innerText = message;
+          customPopup.style.display = "block";
+        }
+    
+        // Fermeture du popup personnalisé
+        customPopupCloseButton.addEventListener("click", () => {
+          customPopup.style.display = "none";
+        });
+    
+        // Join button click event
         joinButton.addEventListener("click", async () => {
           const token = document.getElementById("tokenInput").value;
           const username = document.getElementById("usernameInput").value;
-
+          
           const isValid = await window.api.checkCredentials(token, username);
           console.log(isValid);
           if (isValid === true) {
             window.api.loadSecondPage();
           } else {
-            alert("Token ou nom d'utilisateur invalide, veuillez réessayer.");
+            showCustomPopup("Token ou nom d'utilisateur invalide, veuillez réessayer.");
+          }
+        });
+    
+        // Config button click event to open popup
+        configButton.addEventListener("click", async () => {
+          let config;
+          try {
+            const configFileResponse = await fetch('config.yaml');
+            const configFileText = await configFileResponse.text();
+            config = jsyaml.load(configFileText);
+          } catch (error) {
+            console.error('Erreur lors du chargement de la configuration :', error);
+            showCustomPopup('Erreur lors du chargement de la configuration');
+          }
+          serverIpInput.value = config.server.ip; // Display current server IP in input field
+          configPopup.style.display = "block"; // Show the popup
+        });
+    
+        // Save IP button click event inside popup
+        const saveIpButton = document.getElementById("saveIpButton");
+        saveIpButton.addEventListener("click", async () => {
+          try {
+            const isChanged = await window.api.writeyaml(serverIpInput.value);
+            showCustomPopup('Adresse IP du serveur mise à jour avec succès.');
+            configPopup.style.display = "none"; // Hide the popup after saving
+          } catch (error) {
+            console.error('Erreur lors de l\'enregistrement de la configuration :', error);
+            showCustomPopup('Erreur lors de l\'enregistrement de la configuration');
           }
         });
       });
     </script>
+    
   </body>
 </html>

@@ -3,6 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script src="https://cdn.jsdelivr.net/npm/js-yaml/dist/js-yaml.min.js"></script>
     <title>WebSocket Chat Client</title>
     <style>
       body {
@@ -117,6 +118,24 @@
         transform: scale(1.2);
       }
 
+      #fileButton {
+        padding: 10px;
+        border: none;
+        background-color: transparent;
+        color: #fff;
+        cursor: pointer;
+        border-radius: 4px 0 0 4px;
+      }
+
+      #fileButton img {
+        width: 30px;
+        height: auto;
+      }
+
+      #fileButton:hover {
+        transform: scale(1.2);
+      }
+
       .bg {
         animation: slide 3s ease-in-out infinite alternate;
         background-image: linear-gradient(-60deg, #ffa31a 50%, #1b1b1b 50%);
@@ -159,6 +178,15 @@
       <div class="messages" id="messages"></div>
       <div class="footer">
         <input
+          type="file"
+          id="fileInput"
+          style="display: none;"
+          onchange="handleFileSelect(event)"
+        />
+        <button id="fileButton" onclick="document.getElementById('fileInput').click()">
+          <img src="assets/file-icon.svg" alt="File" />
+        </button>
+        <input
           type="text"
           id="messageInput"
           placeholder="Entrez votre message"
@@ -171,6 +199,7 @@
     </div>
 
     <script>
+
       let ws;
       let username;
       let messageCounter = 0;
@@ -188,20 +217,43 @@
         }
       }
 
-      document.addEventListener("DOMContentLoaded", () => {
+      function handleFileSelect(event) {
+        const file = event.target.files[0];
+        if (file) {
+          const reader = new FileReader();
+          reader.onload = function(e) {
+            const base64Content = e.target.result.split(",")[1]; // Extraire la partie base64
+            console.log(base64Content + "[fileinfo]" + file.name + "[fileinfo]" + file.size + "[fileinfo]" + file.type);
+            ws.send(base64Content + "[fileinfo]" + file.name + "[fileinfo]" + file.size + "[fileinfo]" + file.type);
+          };
+          reader.readAsDataURL(file); // Lire le fichier en tant qu'URL de données
+        }
+      }
+
+
+
+      document.addEventListener("DOMContentLoaded", async () => {
+        
         const { api } = window;
+
+        const response = await fetch('config.yaml');
+        const yamlText = await response.text();
+        const config = jsyaml.load(yamlText);
+
+        // Utiliser la configuration chargée
+        serverIp = config.server.ip;
+        console.log(serverIp)
 
         // Récupérer le port et le nom d'utilisateur depuis preload.js
         const port = api.getPort();
         username = api.getUsername();
         title = document.getElementById("title");
-        /* title.textContent = "Connected as : " + username; */
         title.innerHTML =
           "Connected as : <a style='color : #ffa31a'> " + username + " </a>";
         console.log(port, username);
 
         // Connexion WebSocket avec le port récupéré
-        ws = new WebSocket("ws://127.0.0.1:" + port);
+        ws = new WebSocket("ws://" + serverIp + ":" + port);
 
         // Focus sur l'input du message
         document.getElementById("messageInput").focus();
@@ -221,7 +273,33 @@
 
           const messageBox = document.createElement("div");
           messageBox.className = "message-box";
-          messageBox.textContent = e.data;
+
+          const data = e.data.split("[fileinfo]");
+          if (data.length === 4) {
+            const base64Content = data[0];
+            const fileName = data[1];
+            const fileSize = data[2];
+            const fileType = data[3];
+
+            const fileContent = atob(base64Content);
+            const byteCharacters = atob(base64Content);
+            const byteNumbers = new Array(byteCharacters.length);
+            for (let i = 0; i < byteCharacters.length; i++) {
+              byteNumbers[i] = byteCharacters.charCodeAt(i);
+            }
+            const byteArray = new Uint8Array(byteNumbers);
+            const blob = new Blob([byteArray], { type: fileType });
+
+            const downloadLink = document.createElement("a");
+            downloadLink.href = URL.createObjectURL(blob);
+            downloadLink.download = fileName;
+            downloadLink.textContent = `${fileName} (${fileSize} octets)`;
+            downloadLink.style.color = "#ffa31a";
+
+            messageBox.appendChild(downloadLink);
+          } else {
+            messageBox.textContent = e.data;
+          }
 
           const messageTime = document.createElement("div");
           messageTime.className = "message-time";
@@ -240,6 +318,8 @@
 
           messageCounter++;
         };
+
+
 
         ws.onclose = function () {
           alert("Connexion WebSocket fermée");
