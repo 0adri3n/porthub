@@ -4,8 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>porthub - Chat Sécurisé</title>
-    <link rel="stylesheet" href="../static/assets/style.css">
-    <link rel="stylesheet" href="../static/assets/style_panel.css">
+    <link rel="icon" type="image/x-icon" href="../static/assets/img/icon.png">
+    <link rel="stylesheet" href="../static/assets/css/style.css">
+    <link rel="stylesheet" href="../static/assets/css/style_panel.css">
     <script src="../static/scripts/webscript_config.js"></script>
 </head>
 <body>
@@ -14,12 +15,12 @@
             <div class="logo">
                 <a href="index.html">
                     <!-- Mettez à jour le chemin vers l'image -->
-                    <img src="../static/assets/img/logo.jpg" alt="Logo de votre site">
+                    <img src="../static/assets/img/logo.png" alt="Logo de votre site">
                 </a>
             </div>
             <nav class="nav">
                 <a href="index.html">Accueil</a>
-                <a href="/login">Connexion</a>
+                <a href="connexion.html">Panel</a>
                 <a href="info.html">Info</a>
             </nav>
             <div class="connexion">
@@ -50,7 +51,7 @@
                     <input type="number" id="users_count" name="users_count" min="2" required>
                 </div>
                 <div>
-                    <button type="submit">Créer</button>
+                    <button type="submit" class="btn btn-primary">Créer</button>
                 </div>
             </form>
         </div>
@@ -64,6 +65,7 @@
                     <th>Password</th>
                     <th>Port</th>
                     <th>Users count</th>
+                    <th>Actions</th> <!-- Nouvelle colonne pour les actions -->
                 </tr>
             </thead>
             <tbody>
@@ -75,17 +77,14 @@
                     <td>{{ user.credit }}</td>
                     <td>{{ user.is_admin }}</td>
                     <td><button class="btnEdit">Modifier</button></td>
-                    <td><button class="btnEdit">Supprimer</button></td>
+                    <td><button class="btnDelete">Supprimer</button></td>
+                    <td><button class="btnCopy"><img src="../static/assets/img/copy_icon.png" alt="Copier"></button></td> <!-- Bouton de copie avec icône -->
                 </tr>
                 {% endfor %}
             </tbody>
         </table>
-
-
     </main>
 
-
-    
     <footer>
         <div class="container">
             <p>&copy; 2024 Chat Sécurisé. Tous droits réservés.</p>

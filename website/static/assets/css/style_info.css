@@ -234,11 +234,3 @@ footer p {
     border: 2px solid #ffa31a; /* Encadré orange */
     padding: 10px; /* Ajouter un peu de padding pour l'encadré */
 }
-
-/* Encadré pour encadre-wrapper */
-.encadre-wrapper {
-    border: 2px solid #ffa31a; /* Encadré orange */
-    border-radius: 10px;
-    padding: 20px;
-    margin-top: 20px;    
-}

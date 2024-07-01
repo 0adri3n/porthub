@@ -1,0 +1,361 @@
+/* Reset des styles de base */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* Styles généraux pour la page */
+body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    font-family: Arial, sans-serif;
+    background-color: #000;
+    color: #fff;
+    display: flex;
+    flex-direction: column;
+    font-size: 1.2em;
+    text-decoration: none;
+}
+
+/* En-tête de la page */
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #1f1f1f;
+    padding: 10px 20px;
+}
+
+/* Logo dans l'en-tête */
+.header .logo {
+    font-size: 1.5em;
+    font-weight: bold;
+    color: #FF9900; /* Couleur du logo */
+}
+
+/* Conteneur de navigation */
+.nav-container {
+    display: flex;
+    align-items: center;
+}
+
+/* Styles pour les liens de navigation */
+.nav a {
+    color: #fff;
+    text-decoration: none;
+    margin-right: 0;
+    font-size: 1em;
+    font-weight: none;
+}
+
+/* Couleur de fond au survol */
+.nav a:hover {
+    color: #ffa31a;
+}
+
+/* Boutons de navigation */
+.nav-container .bouton {
+    width: 100px; /* Largeur fixe pour tous les boutons */
+    height: 40px; /* Hauteur fixe pour tous les boutons */
+    background-color: #FF9900; /* Couleur de fond */
+    border: 1px solid #FF9900; /* Bordure */
+    color: white; /* Couleur du texte */
+    text-align: center; /* Centrer le texte */
+    font-size: 12px; /* Taille du texte */
+    cursor: pointer; /* Changer le curseur pour pointer */
+    border-radius: 5px; /* Coins arrondis */
+    margin: 3px; /* Espacement réduit autour des boutons */
+    transition: background-color 0.3s ease; /* Transition pour le survol */
+    display: flex; /* Utilisation de flex pour centrer le texte verticalement */
+    align-items: center; /* Centrage vertical */
+    justify-content: center; /* Centrage horizontal */
+    font-weight: normal; /* Assure que le texte des boutons n'est pas en gras */
+}
+
+/* Couleur de fond au survol */
+.nav-container .bouton:hover {
+    background-color: #e68a00;
+}
+
+/* Conteneur pour les boutons de connexion */
+.connexion {
+    display: flex;
+    align-items: center;
+    position: absolute; /* Make this position absolute */
+    right: 20px; /* Align to the right side */
+}
+
+.connexion .btn {
+    color: #000;
+    background-color: #ffa31a;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    text-decoration: none;
+    transition: background-color 0.3s, color 0.3s;
+    font-size: 1.0em;
+}
+
+.connexion .btn:hover {
+    background-color: #fff;
+    color: #000;
+}
+
+/* Boutons généraux */
+.btn {
+    background-color: #ffa31a;
+    color: #fff;
+    border: none;
+    padding: 10px 20px; /* Ajustement du padding */
+    cursor: pointer;
+    border-radius: 5px;
+    font-size: 1em;
+}
+
+.btn:hover {
+    background-color: #e59400; /* Couleur de survol ajustée */
+}
+
+/* Section principale du contenu */
+main {
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    width: 70%;
+    justify-content: center;
+    align-items: center;
+    margin: 0 auto;    
+}
+
+h1 {
+    margin-bottom: 20px;
+    font-size: 2.5rem;
+    text-align: center;
+}
+
+.searchInput {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 20px;
+    font-size: 1rem;
+    border: 1px solid #3333;
+    border-radius: 4px;
+}
+
+#editConfigModal {
+    display: none;
+    position: fixed;
+    z-index: 1;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0,0,0,0.4);
+    padding-top: 60px;
+}
+
+#userTable {
+    width: 100%;
+    border-collapse: collapse;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    background-color: #333;
+}
+
+#userTable th,
+#userTable td {
+    padding: 12px 15px;
+    text-align: left;
+    border-bottom: 1px solid #333;
+}
+
+#userTable th {
+    background-color: #ffa31a;
+    color: #fff;
+}
+
+#userTable tbody tr:nth-child(even) {
+    background-color: #1a1a1a;
+}
+
+#userTable tbody tr:hover {
+    background-color: #2a2a2a;
+}
+
+.btnEdit {
+    color: #ffffff; /* Texte blanc */
+    background-color: transparent;
+    border: 1px solid #ffffff;
+    padding: 5px 10px;
+    border-radius: 5px;
+    text-decoration: none;
+    transition: background-color 0.3s, color 0.3s;
+    font-size: 1.2em;
+}
+
+.btnEdit:hover {
+    color: #ffa31a; 
+    background-color: #ffffff;
+}
+
+/* Styles pour le modal */
+.modal {
+    display: none; 
+    position: fixed; 
+    z-index: 1; 
+    left: 0;
+    top: 0;
+    width: 100%; 
+    height: 100%; 
+    overflow: auto; 
+    background-color: rgb(0,0,0); 
+    background-color: rgba(0,0,0,0.4); 
+    padding-top: 60px; 
+}
+
+.modal-content {
+    background-color: #333;
+    margin: 5% auto; 
+    padding: 20px;
+    border: 1px solid #888;
+    width: 80%; 
+    max-width: 500px;
+    border-radius: 5px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.close {
+    color: #fff;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+}
+
+input:disabled {
+    background-color: #f0f0f0; /* Couleur de fond pour les champs désactivés */
+    color: #a0a0a0;           /* Couleur du texte pour les champs désactivés */
+    border: 1px solid #ccc;   /* Bordure pour les champs désactivés */
+    cursor: not-allowed;      /* Curseur indiquant que le champ est désactivé */
+}
+
+.close:hover,
+.close:focus {
+    color: black;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+/* Formulaires */
+form label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+
+form input[type="text"],
+form input[type="email"],
+form input[type="number"] {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 1rem;
+}
+
+form input[type="checkbox"] {
+    margin-right: 10px;
+}
+
+form button[type="submit"] {
+    background-color: #ffa31a;
+    color: #fff;
+    border: none;
+    padding: 10px 20px;
+    cursor: pointer;
+    border-radius: 4px;
+    font-size: 1rem;
+}
+
+form button[type="submit"]:hover {
+    background-color: #e59400;
+}
+
+/* Styles pour le tableau des configurations */
+#configTable {
+    width: 100%;
+    border-collapse: collapse;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    background-color: #333;
+    margin-top: 20px; /* Ajoute un espace entre les deux tableaux */
+}
+
+#configTable th,
+#configTable td {
+    padding: 12px 15px;
+    text-align: left;
+    border-bottom: 1px solid #333;
+    color: #fff; /* Couleur du texte */
+}
+
+#configTable th {
+    background-color: #ffa31a; /* Couleur de fond pour les en-têtes */
+}
+
+#configTable tbody tr:nth-child(even) {
+    background-color: #1a1a1a; /* Couleur de fond pour les lignes paires */
+}
+
+#configTable tbody tr:hover {
+    background-color: #2a2a2a; /* Couleur de fond au survol */
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .nav {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        margin-left: 0;
+    }
+    
+    .nav a {
+        margin-right: 0;
+        margin-bottom: 10px;
+    }
+    
+    .connexion {
+        text-align: center;
+        margin-left: 0;
+    }
+
+    main {
+        width: 90%;
+    }
+}
+
+/* Boutons de basculement */
+.toggle-buttons {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 20px; /* Ajoute un espace supplémentaire si nécessaire */
+}
+
+.toggle-buttons button {
+    background-color: #ffa31a;
+    color: #fff;
+    border: none;
+    padding: 10px 20px;
+    cursor: pointer;
+    margin: 0 5px; /* Ajuste l'espace entre les boutons */
+    border-radius: 4px;
+    font-size: 1rem;
+}
+
+.toggle-buttons button:hover {
+    background-color: #e59400;
+}

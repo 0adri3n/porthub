@@ -4,24 +4,32 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>porthub - Chat Sécurisé</title>
-    <!-- Mettez à jour le chemin vers le fichier CSS -->
-    <link rel="stylesheet" href="../static/assets/style.css">
+    <link rel="icon" type="image/x-icon" href="../static/assets/img/icon.png">
+    <link rel="stylesheet" href="../static/assets/css/style.css">
+    <script src="../static/assets/scripts/index.js" defer></script>
 </head>
 <body>
+    <div id="age-confirmation">
+        <div class="modal-content">
+            <p>Avez-vous 18 ans ou plus ?</p>
+            <button class="btn" id="accept-age">Oui</button>
+            <button class="btn" id="decline-age">Non</button>
+        </div>
+    </div>
     <header>
         <div class="container">
             <div class="logo">
                 <a href="index.html">
-                    <img src="../static/assets/img/logo.jpg" alt="Logo de votre site">
+                    <img src="../static/assets/img/logo.png" alt="Logo de votre site">
                 </a>
             </div>
             <nav class="nav">
                 <a href="index.html">Accueil</a>
-                <a href="/login">Connexion</a>
+                <a href="connexion.html">Panel</a>
                 <a href="info.html">Info</a>
             </nav>
             <div class="connexion">
-                <a href="/login" class="btn">Se connecter</a>
+                <a href="connexion.html" class="btn">Se connecter</a>
             </div>
         </div>
     </header>

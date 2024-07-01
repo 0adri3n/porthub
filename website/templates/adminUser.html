@@ -4,8 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>porthub - Chat Sécurisé</title>
-    <link rel="stylesheet" href="../static/assets/style.css">
-    <link rel="stylesheet" href="../static/assets/style_admin.css">
+    <link rel="icon" type="image/x-icon" href="../static/assets/img/icon.png">
+    <link rel="stylesheet" href="../static/assets/css/style.css">
+    <link rel="stylesheet" href="../static/assets/css/style_admin.css">
     <script src="../static/scripts/webscript.js"></script>
 </head>
 <body>
@@ -13,31 +14,27 @@
         <div class="container">
             <div class="logo">
                 <a href="index.html">
-                    <img src="../static/assets/img/logo.jpg" alt="Logo de votre site">
+                    <img src="../static/assets/img/logo.png" alt="Logo de votre site">
                 </a>
             </div>
             <nav class="nav">
                 <a href="index.html">Accueil</a>
-                <a href="/login">Connexion</a>
+                <a href="connexion.html">Panel</a>
                 <a href="info.html">Info</a>
             </nav>
             <div class="connexion">
-                <button class="btn" id="logoutButton">Déconnexion</button>
+                <a href="connexion.html" class="btn">Se connecter</a>
             </div>
         </div>
     </header>
     <main>
-
         <div class="toggle-buttons">
             <button id="toggleUserButton" onclick="showUsersTable()">Afficher Utilisateurs</button>
             <button id="toggleConfigButton" onclick="showConfigsTable()">Afficher Configurations</button>
         </div>
-
         <h1>Admin Panel</h1>
-
         <input type="text" id="searchInputUser" oninput="filterUsers()" placeholder="Rechercher par nom d'utilisateur" style="display: none;" class="searchInput">
         <input type="text" id="searchInputConfig" oninput="filterConfigs()" placeholder="Rechercher par nom de configuration" style="display: none;" class="searchInput">
-     
         <table id="userTable">
             <thead>
                 <tr>
@@ -62,7 +59,6 @@
                 {% endfor %}
             </tbody>
         </table>
-
         <table id="configTable">
             <thead>
                 <tr>
@@ -87,7 +83,6 @@
                 {% endfor %}
             </tbody>
         </table>
-
         <div id="editUserModal" class="modal">
             <div class="modal-content">
                 <span class="close">&times;</span>
@@ -103,7 +98,6 @@
                 </form>
             </div>
         </div>
-
         <div id="editConfigModal" class="modal">
             <div class="modal-content">
                 <span class="close">&times;</span>
@@ -121,7 +115,6 @@
                 </form>
             </div>
         </div>
-
     </main>
     <footer>
         <div class="container">
