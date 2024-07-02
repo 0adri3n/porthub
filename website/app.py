@@ -643,6 +643,6 @@ def updateConfigUsersCount(port):
 
 if __name__ == '__main__':
     signal.signal(signal.SIGINT, signal_handler)
-    app.run(debug=True,ssl_context=(cert, key))
+    app.run(debug=True,host="0.0.0.0",ssl_context=(cert, key))
 
     
