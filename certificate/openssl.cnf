@@ -1,0 +1,30 @@
+[ req ]
+default_bits       = 2048
+default_md         = sha256
+distinguished_name = req_distinguished_name
+req_extensions     = req_ext
+x509_extensions    = v3_ca # The extensions to add to the self signed cert
+
+[ req_distinguished_name ]
+countryName                     = FR 
+countryName_default             = FR
+stateOrProvinceName             = Ile-de-France
+stateOrProvinceName_default     = Ile-de-France
+localityName                    = Paris
+localityName_default            = Paris
+organizationName                = Porthub
+organizationName_default        = Porthub
+organizationalUnitName          = IT
+organizationalUnitName_default  = IT
+commonName                      = localhost
+commonName_default              = localhost
+
+
+[ req_ext ]
+subjectAltName = @alt_names
+
+[ v3_ca ]
+subjectAltName = @alt_names
+
+[ alt_names ]
+IP.1   = 127.0.0.1
