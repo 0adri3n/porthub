@@ -5,6 +5,7 @@ const WebSocket = require("ws");
 const axios = require("axios");
 const yaml = require("yaml");
 const fs = require("fs");
+const https = require("https");
 
 
 let win;
@@ -22,7 +23,7 @@ function createWindow() {
       nodeIntegration: false,
     },
     icon: path.join(__dirname, "assets/icon.png"),
-    autoHideMenuBar: true,
+    autoHideMenuBar: false,
   });
 
   win.loadURL(
@@ -49,7 +50,10 @@ ipcMain.handle("check-credentials", async (event, token, username) => {
     serverIp = config.server.ip;
 
     
-    const response = await axios.get("http://" + serverIp + ":5000/token/" + token);
+    const response = await axios.get("https://" + serverIp + ":5000/token/" + token, {
+      // Ignorer les erreurs de certificat non approuvé (auto-signé)
+      httpsAgent: new https.Agent({ rejectUnauthorized: false }),
+    });
     console.log(response.data.exists);
 
     if (response.data.exists === true) {

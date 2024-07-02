@@ -253,7 +253,7 @@
         console.log(port, username);
 
         // Connexion WebSocket avec le port récupéré
-        ws = new WebSocket("ws://" + serverIp + ":" + port);
+        ws = new WebSocket("wss://" + serverIp + ":" + port);
 
         // Focus sur l'input du message
         document.getElementById("messageInput").focus();

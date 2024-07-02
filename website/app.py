@@ -20,7 +20,7 @@ from flask_jwt_extended import JWTManager, jwt_required, get_jwt_identity, creat
 import datetime
 import time
 from datetime import timedelta
-
+import ssl
 
 load_dotenv()
 
@@ -101,6 +101,9 @@ app = Flask(__name__)
 jwt = JWTManager(app)
 app.secret_key = "porthub"
 
+cert = 'certificate/cert.pem'
+key = 'certificate/private.key'
+
 
 class WebSocketThread(threading.Thread):
     def __init__(self, configuration, stop_event):
@@ -116,9 +119,11 @@ class WebSocketThread(threading.Thread):
         asyncio.run(self.start_server(self.port))
 
     async def start_server(self, port):
+        ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
+        ssl_context.load_cert_chain(certfile='certificate/cert.pem', keyfile='certificate/private.key')
         try:
             print(f"Starting WebSocket server on port {port}")
-            self.server = await websockets.serve(self.register_client, "0.0.0.0", port)
+            self.server = await websockets.serve(self.register_client, "0.0.0.0", port, ssl=ssl_context)
             await self.stop_event.wait()
         except Exception as e:
             print(f"WebSocket server on port {port} encountered an error:", e)
@@ -150,6 +155,7 @@ class WebSocketThread(threading.Thread):
 connected_clients: Set[WebSocketServerProtocol] = set()
 websocket_threads = []
 
+
 def start_websocket(configuration):
     stop_event = asyncio.Event()
     stop_event = asyncio.Event()
@@ -177,36 +183,6 @@ def stop_websocket(port):
 
     for thread, stop_event in threads_to_remove:
         websocket_threads.remove((thread, stop_event))
-
-connected_clients: Set[WebSocketServerProtocol] = set()
-websocket_threads = []
-
-
-
-def start_websocket(configuration):
-    loop = asyncio.new_event_loop()
-    asyncio.set_event_loop(loop)
-    stop_event = asyncio.Event()
-    thread = WebSocketThread(configuration, stop_event)
-    thread.start()
-    websocket_threads.append((thread, stop_event))
-
-
-def stop_websocket(port):
-    global websocket_threads
-
-    # Find the WebSocket thread corresponding to the specified port
-    threads_to_remove = []
-    for thread, stop_event in websocket_threads:
-        if int(thread.configuration["port"]) == int(port):
-            print("Stopping WebSocket server on port:", port)
-            stop_event.set()
-            threads_to_remove.append((thread, stop_event))
-
-    # Remove the thread from the list
-    for thread, stop_event in threads_to_remove:
-        websocket_threads.remove((thread, stop_event))
-
 
 @app.route('/')
 def home():
@@ -617,6 +593,10 @@ def getConfig(port):
     except ClientError as e:
         return jsonify({'error': 'Error retrieving config', 'details': str(e)}), 500
 
+@app.route('/info')
+def info():
+    return render_template('info.html')
+
 @app.route('/config/<int:port>', methods=["PUT"])
 @jwt_required()
 def updateConfigUsersCount(port):
@@ -663,6 +643,6 @@ def updateConfigUsersCount(port):
 
 if __name__ == '__main__':
     signal.signal(signal.SIGINT, signal_handler)
-    app.run(debug=True, host="0.0.0.0")
+    app.run(debug=True,ssl_context=(cert, key))
 
     
