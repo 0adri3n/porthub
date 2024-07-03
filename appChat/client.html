@@ -184,7 +184,7 @@
           onchange="handleFileSelect(event)"
         />
         <button id="fileButton" onclick="document.getElementById('fileInput').click()">
-          <img src="assets/file-icon.svg" alt="File" />
+          <img src="assets/file-upload.png" alt="File" />
         </button>
         <input
           type="text"
@@ -209,7 +209,7 @@
         const message = input.value;
         const msgEncrypted = await window.api.encryptMessage(username + ": " + message);
         console.log(msgEncrypted);
-        ws.send(msgEncrypted);
+        ws.send(username + ": " + message);
         input.value = "";
       }
 
@@ -267,8 +267,6 @@
         };
 
         ws.onmessage = async function (e) {
-          console.log(e);
-          e = await api.decryptMessage(e);
           
           const messagesDiv = document.getElementById("messages");
           const messageElement = document.createElement("div");

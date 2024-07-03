@@ -168,7 +168,7 @@ ipcMain.handle("encrypt-message", async (event,Message)=>{
   return encryptedMessage;
 });
 
-ipcMain.handle("decrypt-Message", async (event,Message)=>{
+ipcMain.handle("decrypt-message", async (event,Message)=>{
   const crypto = require('crypto');
   const fs = require('fs');
 
