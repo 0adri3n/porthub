@@ -138,6 +138,7 @@ ipcMain.handle("write-yaml", async (event, new_ip) => {
     }
   };
 
+
   const filePath = 'config.yaml';
   const yamlText = jsyaml.dump(dataToWrite);
 
@@ -152,7 +153,33 @@ ipcMain.handle("write-yaml", async (event, new_ip) => {
   });
 
   
-})
+});
+
+
+ipcMain.handle("encrypt-message", async (event,Message)=>{
+  const crypto = require('crypto');
+  const fs = require('fs');
+
+  // Lire la clé publique et privée
+  const publicKey = fs.readFileSync('encryption/public_key.pem', 'utf8');
+  // Chiffrer le message
+  const encryptedMessage = crypto.publicEncrypt(publicKey, Buffer.from(Message));
+  console.log("Encrypted message:", encryptedMessage.toString('base64'));
+  return encryptedMessage;
+});
+
+ipcMain.handle("decrypt-Message", async (event,Message)=>{
+  const crypto = require('crypto');
+  const fs = require('fs');
+
+  // Lire la clé privée
+  const privateKey = fs.readFileSync('encryption/private_key.pem', 'utf8');
+
+  // DeChiffrer le message
+  const decryptedMessage = crypto.privateDecrypt(privateKey, Message);
+  console.log(decryptedMessage.toString());
+  return decryptedMessage;
+});
 
 app.on("ready", createWindow);
 

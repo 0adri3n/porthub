@@ -123,7 +123,8 @@ class WebSocketThread(threading.Thread):
         ssl_context.load_cert_chain(certfile='certificate/cert.pem', keyfile='certificate/private.key')
         try:
             print(f"Starting WebSocket server on port {port}")
-            self.server = await websockets.serve(self.register_client, "0.0.0.0", port, ssl=ssl_context)
+            self.server = await websockets.serve(self.register_client, "0.0.0.0", port)
+            # Pour SSL : self.server = await websockets.serve(self.register_client, "0.0.0.0", port, ssl=ssl_context)
             await self.stop_event.wait()
         except Exception as e:
             print(f"WebSocket server on port {port} encountered an error:", e)

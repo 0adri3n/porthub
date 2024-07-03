@@ -204,10 +204,12 @@
       let username;
       let messageCounter = 0;
 
-      function sendMessage() {
+        async function sendMessage()  {
         const input = document.getElementById("messageInput");
         const message = input.value;
-        ws.send(username + ": " + message);
+        const msgEncrypted = await window.api.encryptMessage(username + ": " + message);
+        console.log(msgEncrypted);
+        ws.send(msgEncrypted);
         input.value = "";
       }
 
@@ -253,7 +255,8 @@
         console.log(port, username);
 
         // Connexion WebSocket avec le port récupéré
-        ws = new WebSocket("wss://" + serverIp + ":" + port);
+        ws = new WebSocket("ws://" + serverIp + ":" + port);
+        // Pour SSL : ws = new WebSocket("wss://" + serverIp + ":" + port);
 
         // Focus sur l'input du message
         document.getElementById("messageInput").focus();
@@ -263,7 +266,10 @@
           console.log("Connecté au serveur WebSocket");
         };
 
-        ws.onmessage = function (e) {
+        ws.onmessage = async function (e) {
+          console.log(e);
+          e = await api.decryptMessage(e);
+          
           const messagesDiv = document.getElementById("messages");
           const messageElement = document.createElement("div");
           messageElement.className = "message-container";

@@ -12,5 +12,11 @@ contextBridge.exposeInMainWorld('api', {
   writeyaml: async (new_ip) => {
     return await ipcRenderer.invoke('write-yaml', new_ip);
   },
+  encryptMessage : async (Message)=>{
+    return await ipcRenderer.invoke('encrypt-message',Message);
+  },
+  decryptMessage :  async (encryptMessage)=>{
+    return await ipcRenderer.invoke('decrypt-message',encryptMessage);
+  },
 }
 );
