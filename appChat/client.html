@@ -207,8 +207,8 @@
         async function sendMessage()  {
         const input = document.getElementById("messageInput");
         const message = input.value;
-        const msgEncrypted = await window.api.encryptMessage(username + ": " + message);
-        console.log(msgEncrypted);
+        //const msgEncrypted = await window.api.encryptMessage(username + ": " + message);
+        //console.log(msgEncrypted);
         ws.send(username + ": " + message);
         input.value = "";
       }

@@ -139,7 +139,7 @@ ipcMain.handle("write-yaml", async (event, new_ip) => {
   };
 
 
-  const filePath = 'config.yaml';
+  const filePath = path.join(__dirname, 'config.yaml');
   const yamlText = jsyaml.dump(dataToWrite);
 
   // Écrire dans le fichier
@@ -161,7 +161,7 @@ ipcMain.handle("encrypt-message", async (event,Message)=>{
   const fs = require('fs');
 
   // Lire la clé publique et privée
-  const publicKey = fs.readFileSync('encryption/public_key.pem', 'utf8');
+  const publicKey = fs.readFileSync(path.join(__dirname, 'encryption/public_key.pem'), 'utf8');
   // Chiffrer le message
   const encryptedMessage = crypto.publicEncrypt(publicKey, Buffer.from(Message));
   console.log("Encrypted message:", encryptedMessage.toString('base64'));
@@ -173,7 +173,7 @@ ipcMain.handle("decrypt-message", async (event,Message)=>{
   const fs = require('fs');
 
   // Lire la clé privée
-  const privateKey = fs.readFileSync('encryption/private_key.pem', 'utf8');
+  const privateKey = fs.readFileSync(path.join(__dirname, 'encryption/private_key.pem'), 'utf8');
 
   // DeChiffrer le message
   const decryptedMessage = crypto.privateDecrypt(privateKey, Message);
