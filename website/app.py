@@ -132,6 +132,7 @@ class WebSocketThread(threading.Thread):
     async def register_client(self, websocket: WebSocketServerProtocol):
         
         if self.clients_count <= int(self.configuration["users_count"]) :
+            await asyncio.gather(*(client.send("[porthub bot] A new user just joined !") for client in self.connected_clients))
             self.connected_clients.add(websocket)
             self.clients_count += 1
             print("Client registered")

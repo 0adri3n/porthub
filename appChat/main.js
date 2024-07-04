@@ -23,7 +23,7 @@ function createWindow() {
       nodeIntegration: false,
     },
     icon: path.join(__dirname, "assets/icon.png"),
-    autoHideMenuBar: false,
+    autoHideMenuBar: true,
   });
 
   win.loadURL(
