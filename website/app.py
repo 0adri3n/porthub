@@ -25,8 +25,8 @@ import ssl
 load_dotenv()
 
 app = Flask(__name__)
-app.config["SECRET_KEY"] = "RomainLeoAdrienAmnaNathan"
-app.config["JWT_SECRET_KEY"] ="NathanLeoAdrienRomainAmna"
+app.config["SECRET_KEY"] = "" # Complete
+app.config["JWT_SECRET_KEY"] ="" # Complete
 app.config["JWT_TOKEN_LOCATION"] = ["cookies"]
 app.config["JWT_COOKIE_SECURE"] = True  # Mettre à True en production avec HTTPS
 app.config["JWT_ACCESS_COOKIE_PATH"] = "/"
@@ -37,9 +37,9 @@ app.config["JWT_REFRESH_TOKEN_EXPIRES"] = timedelta(days=365)
 
 
 # Récupérer les clés d'accès depuis les variables d'environnement
-aws_access_key_id = "AKIAZQ3DT3D4D4FHKNV4"
-aws_secret_access_key = "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"
-aws_region = os.getenv('AWS_REGION', 'eu-west-3')  # Assurez-vous de définir votre région AWS dans le fichier .env
+aws_access_key_id = "" # Complete
+aws_secret_access_key = "" # Complete
+aws_region = ""  # Complete
 
 
 
